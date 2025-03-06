@@ -1,0 +1,77 @@
+Idea htmx+
+
+Html signals :)
+
+send="prop1, prop2"
+send-on="event1, event2"
+send-to="target1, target2"
+
+idem p/ receive
+
+<!-- send=data to send all data-* fields. -->
+
+<input  id="name" onchange="itemName.value=name.value" />
+
+<input  id="name"
+    send="value"
+    send-on="change"
+    send-to="itemName"
+/>
+
+<button  id="remove"
+   send="data-id"
+   send-on="click"
+   send-to="#dlgRemove"
+   data-id="5"
+>Remove</button>
+
+<dialog  id="dlgRemove"
+  on-receive-sth="showmodal"
+  >
+  <title>Remove item
+    <span id="itemName"
+      receive="text"
+    ></span>?</title>
+
+  <form method="DELETE" ....
+
+_________
+
+<a href="/foo"  prevent
+  send="href"
+  send-to="main"
+>Foo</a>
+
+<main
+    on-receive-apply="fetch"
+    receive="html"
+    error="text"
+></main>
+________
+
+<a href="/foo"  prevent
+  send="data-html,data-js,data-css"
+  send-to="main"
+  data-html="/pages/foo.html"
+  data-js="/src/foo.js"
+  data-css="/style/foo.css"
+>Foo</a>
+
+<main
+   receive="html-fetch,js-fetch,css-fetch"
+></main>
+
+OR
+
+<main
+   on-receive-apply="fetch,import, style"
+   receive="html"
+  error="({ message})=>alert(message)"
+></main>
+
+
+
+--> MELHORIAS SEMÂNTICAS
+
+send -> send-what
+receive -> receive-as
