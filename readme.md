@@ -1,4 +1,4 @@
-# html-plus
+# html-signals
 
 > WIP
 
