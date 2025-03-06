@@ -1,9 +1,10 @@
 export type Options = {
-    document?: Document
+    document?: Document,
+    sanitizer?: ( content: string ) => string,
 };
 
 
-function makeEventToReceiveProperty( root, property, sendToTargets ) {
+function makeEventToReceiveProperty( root, property, sendToTargets, sanitizer ) {
 
     return event => {
 
@@ -30,13 +31,13 @@ function makeEventToReceiveProperty( root, property, sendToTargets ) {
             if ( content === undefined ) {
                 continue; // Ignore if not defined
             }
-            receive( el, content, allowedPropMap );
+            receive( el, content, allowedPropMap, sanitizer );
         }
     };
 }
 
 
-function receive( target, content, allowedPropMap ) {
+function receive( target, content, allowedPropMap, sanitizer ) {
 
     let receiveAsProp = target.getAttribute( 'receive-as' );
     if ( ! receiveAsProp ) {
@@ -45,6 +46,11 @@ function receive( target, content, allowedPropMap ) {
 
     receiveAsProp = receiveAsProp.trim().toLowerCase();
     const targetProperty = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
+
+    if ( targetProperty === 'innerHTML' && typeof sanitizer === 'function' ) {
+        target[ targetProperty ] = sanitizer( content );
+        return;
+    }
 
     target[ targetProperty ] = content;
 }
@@ -66,7 +72,7 @@ export function register( root: HTMLElement, options?: Options ) {
         const event = sendEvent.trim().toLowerCase();
         // TODO: allow abort signal to unregister all events
         if ( event === 'change' || event === 'blur' || event === 'focus' || event === 'click' ) {
-            el.addEventListener( event, makeEventToReceiveProperty( root, sendWhat, sendTargets ) );
+            el.addEventListener( event, makeEventToReceiveProperty( root, sendWhat, sendTargets, options?.sanitizer ) );
         }
     }
 }
