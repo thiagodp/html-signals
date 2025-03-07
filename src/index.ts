@@ -1,3 +1,5 @@
+import { parseFunction } from "./parser";
+
 export type Options = {
     document?: Document,
     sanitizer?: ( content: string ) => string,
@@ -22,7 +24,7 @@ function makeEventToReceiveProperty( root, property, sendToTargets, sanitizer ) 
         for ( const el of targetElements ) {
             let content = sender[ senderProperty ];
             if ( content === undefined ) {
-                if ( senderProperty === 'text' ) {
+                if ( senderProperty === 'innerText' || senderProperty === 'text' ) {
                     content = sender[ 'textContent' ];
                 } else if ( senderProperty.indexOf( 'data-' ) === 0 ) { // "data-" attributes
                     content = sender.getAttribute( senderProperty );
@@ -37,7 +39,19 @@ function makeEventToReceiveProperty( root, property, sendToTargets, sanitizer ) 
 }
 
 
+
+
 function receive( target, content, allowedPropMap, sanitizer ) {
+
+    let onReceiveProp = target.getAttribute( 'on-receive' );
+    if ( onReceiveProp ) {
+        const r = parseFunction( onReceiveProp );
+        if ( r ) {
+            const { parameters, body } = r;
+            const fn = new Function( ...parameters, body );
+            content = fn( content );
+        }
+    }
 
     let receiveAsProp = target.getAttribute( 'receive-as' );
     if ( ! receiveAsProp ) {

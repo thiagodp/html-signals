@@ -75,3 +75,7 @@ OR
 
 send -> send-what
 receive -> receive-as
+
+---
+
+receive-transform="(content) => content + '1'"

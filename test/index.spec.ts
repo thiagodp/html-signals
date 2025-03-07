@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 
 import { describe, it, expect, beforeAll } from 'vitest';
 
-describe( '', () => {
+describe( 'register', () => {
 
     let window;
     let document;
@@ -148,7 +148,7 @@ describe( '', () => {
     } );
 
 
-    it( 'can send the source element text to the target element\'s HTML when the source is clicked', () => {
+    it( 'can send the source element HTML to the target element\'s HTML when the source is clicked', () => {
 
         const content = '<b>Hello</b>';
 
@@ -172,5 +172,63 @@ describe( '', () => {
 
         const target = document.querySelector( '#foo' );
         expect( target.innerHTML ).toBe( content );
+    } );
+
+
+    it( 'can send a data property from the source element when it is clicked', () => {
+
+        const value = '10';
+
+        document.body.innerHTML = `
+            <div
+                send-what="data-id"
+                send-on="click"
+                send-to="#foo"
+                data-id="${value}"
+            ></div>
+
+            <div id="foo"
+                receive-as="text"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#foo' );
+        expect( target.innerText ).toBe( value );
+    } );
+
+
+
+    it( 'can allow a target to transforming data when receiving', () => {
+
+        const value = '10';
+
+        document.body.innerHTML = `
+            <div
+                send-what="data-id"
+                send-on="click"
+                send-to="#foo"
+                data-id="${value}"
+            ></div>
+
+            <div id="foo"
+                on-receive="( data ) => 'Number: ' + data"
+                receive-as="text"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#foo' );
+        expect( target.innerText ).toBe( 'Number: ' + value );
     } );
 } );
