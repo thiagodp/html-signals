@@ -58,7 +58,7 @@ ________
 >Foo</a>
 
 <main
-   receive="html-fetch,js-fetch,css-fetch"
+   receive-as="html-fetch,js-fetch,css-fetch"
 ></main>
 
 OR
@@ -78,4 +78,95 @@ receive -> receive-as
 
 ---
 
-receive-transform="(content) => content + '1'"
+on-receive="(content) => content + '1'"
+
+======================================================
+
+ALREADY SUPPORTED:
+- send-what with single property
+- send-to with query selector
+- send-as with "text", "html", and "json" - JSON with unquoted properties only (html limitation)
+- send-on with single event
+- on-receive with sync function
+- receive-as with "text" and "html"
+
+TO-DO:
+
+- send-what with multiple properties, in order
+- send-on with multiple events, in order
+- on-receive with async function
+
+- on-receive-error
+
+- allow abort signal to unregister all events
+- send-on="receive"
+- form support to send-what="form-data" with send-as="json"
+- prevent - to call preventDefault() on <a>, <form>, etc.
+
+- $history as a special target for "send-to", to add a URL to the browser history ?
+      Example:
+        <a href="/foo" prevent send-what="href" send-to="$history,span" send-as="text" >Foo</a>
+        <span hidden send-on="receive" send-as="fetch-html" send-to="main" ></span>
+        <main receive-as="html" ></main>
+
+- on-receive="( id ) => $http.delete( `https://foo.com/bar/${id}`, { headers: { "Additional-Header-Here": "foo" } } )"
+- on-receive="( json ) => $http.postJSON( 'https://foo.com/bar', json, { headers: { "Additional-Header-Here": "foo" } } )"
+- on-receive="( json ) => $http.putJSON( `https://foo.com/bar/${json.id}`, json, { headers: { "Additional-Header-Here": "foo" } } )"
+
+- send-element ?
+    example:
+      <div send-element="span" send-as="html" send-on="click" send-to="#bar" >Example</div>
+      <span>Foo</span>
+      <div id="bar" ></div>
+    -> do not allow both "send-what" and "send-element"
+
+    <template>
+      <option></option>
+
+- send-as="dom"
+  example:
+    Instead of
+      on-receive="( html ) => { const d = document.createDocumentFragment(); d.innerHTML = html; d.firstChild.hidden = false; return d.innerHTML; }"
+    use
+      send-as="dom"
+    and then
+      on-receive="( el ) => { el.hidden = false; return el; }
+
+-----
+
+SPA - example 1:
+
+<a href="/foo" prevent send-what="href" send-to="$history,span" send-as="text" >Foo</a>
+<a href="/bar" prevent send-what="href" send-to="$history,span" send-as="text" >Bar</a>
+
+<!-- on error, returns the error message as HTML -->
+<span hidden send-on="receive" send-as="fetch-html" send-to="main" ></span>
+<main receive-as="html" ></main>
+
+
+SPA - example 2:
+
+
+<!-- Error in "main" will cancel the addition to $history -->
+<a href="/foo" prevent send-what="href" send-to="main,$history" send-as="text" >Foo</a>
+<a href="/bar" prevent send-what="href" send-to="main,$history" send-as="text" >Bar</a>
+
+<!-- on error, returns the error message as HTML -->
+<main receive-as="fetch-html" ></main>
+
+
+>> Example 2 looks better on both concision and error handling.
+
+-----
+
+    <style>
+        dialog div { cursor: pointer; }
+    </style>
+    <button
+        onclick="dlg.showModal()"
+    >Show Modal</button>
+
+    <dialog id="dlg" >
+        <div onclick="dlg.close()" >✖️</div>
+        <h1>Hello</h1>
+    </dialog>

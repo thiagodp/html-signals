@@ -5,6 +5,13 @@ describe( '#parseFunction', () => {
 
     describe( 'arrow function', () => {
 
+        it( 'can parse without parameters', () => {
+            const fn = '() => "foo"';
+            const r = parseFunction( fn );
+            expect( r?.parameters.length ).toBe( 0 );
+            expect( r?.body ).toContain( 'return "foo"' );
+        } );
+
         it( 'can parse with one parameter', () => {
             const fn = '( foo ) => "foo"';
             const r = parseFunction( fn );
@@ -51,11 +58,27 @@ describe( '#parseFunction', () => {
         } );
 
 
+        it( 'can parse anonymous function with no parameters and a body', () => {
+            const fn = 'function() { return "foo" }';
+            const r = parseFunction( fn );
+            expect( r?.parameters.length ).toBe( 0 );
+            expect( r?.body ).toContain( '{ return "foo" }' );
+        } );
+
+
         it( 'can parse a named function with parameters and body', () => {
             const fn = 'function zoo( foo, bar ) { return "foo" }';
             const r = parseFunction( fn );
             expect( r?.parameters ).toContain( 'foo' );
             expect( r?.parameters ).toContain( 'bar' );
+            expect( r?.body ).toContain( '{ return "foo" }' );
+        } );
+
+
+        it( 'can parse a named function with no parameters and a body', () => {
+            const fn = 'function zoo() { return "foo" }';
+            const r = parseFunction( fn );
+            expect( r?.parameters.length ).toBe( 0 );
             expect( r?.body ).toContain( '{ return "foo" }' );
         } );
 

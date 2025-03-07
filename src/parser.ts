@@ -1,20 +1,21 @@
 export function parseFunction( functionString ) {
-    const functionRegex = /^[ ]*(function ?[a-z_0-9]*)?[ ]*([a-z_0-9, ]+|\([ ]*[a-z_0-9, ]+[ ]*\)+[ ]*)[ ]*(=>[ ]*([^{].*)|=>[ ]+\{(.+)\}|\{(.*)\})/i;
+    const functionRegex = /^[ ]*(function ?[a-z_0-9]*)?[ ]*([a-z_0-9, ]+|\([ ]*[a-z_0-9, ]*[ ]*\){0,1}[ ]*)[ ]*(=>[ ]*([^{].*)|=>[ ]+\{(.+)\}|\{(.*)\})/i;
     const r = functionRegex.exec( functionString );
-    if ( ! r ) {
-        return;
-    }
     // console.log( r );
+    if ( ! r ) {
+        return { parameters: [], body: '' };
+    }
     let [ , , header, body ] = r;
     // console.log( header );
     // console.log( body );
-    const parameters = header.replaceAll( /\(|\)/g, '' ).split( ',' ).map( v => v.trim() );
+    const parameters = header.replaceAll( /\(|\)/g, '' ).split( ',' ).map( v => v.trim() ).filter( v => v.length > 0 );
     if ( body.startsWith( '=>' ) ) {
         body = body.replace( '=>', '' );
         if ( ! body.trim().startsWith( '{' ) ) {
             body = 'return' + body;
         }
     }
+    // console.log( 'parameters', parameters );
     return { parameters, body };
 }
 
