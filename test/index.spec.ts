@@ -204,7 +204,7 @@ describe( 'register', () => {
 
 
 
-    it( 'can allow a target to transforming data when receiving', () => {
+    it( 'can allow a target to transforming data when receiving it', () => {
 
         const value = '10';
 
@@ -231,4 +231,36 @@ describe( 'register', () => {
         const target = document.querySelector( '#foo' );
         expect( target.innerText ).toBe( 'Number: ' + value );
     } );
+
+
+
+    it( 'can allow a target to transforming JSON data when receiving it', () => {
+
+        document.body.innerHTML = `
+            <div
+                send-what="data-id"
+                send-on="click"
+                send-to="#foo"
+                data-id="{ value: 10 }"
+                send-as="json"
+            ></div>
+
+            <div id="foo"
+                on-receive="( obj ) => obj.value"
+                receive-as="text"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        expect( source.getAttribute( 'data-id' ) ).toBe( '{ value: 10 }' );
+
+        const target = document.querySelector( '#foo' );
+        expect( target.innerText ).toBe( '10' );
+    } );
+
 } );

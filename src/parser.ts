@@ -17,3 +17,13 @@ export function parseFunction( functionString ) {
     }
     return { parameters, body };
 }
+
+
+export function parseUnquotedJSON( jsonString: string ): string {
+
+    // Replace unquoted keys with quoted keys
+    const newJsonString = jsonString.replace( /([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '"$1":' );
+
+    // Parse the string
+    return new Function(`return ${newJsonString}`)();
+}

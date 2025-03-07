@@ -1,16 +1,20 @@
-import { parseFunction } from "./parser";
+import { parseFunction, parseUnquotedJSON } from "./parser";
+
+
+type SanitizerFunction = ( content: string ) => string;
+
 
 export type Options = {
     document?: Document,
-    sanitizer?: ( content: string ) => string,
+    sanitizer?: SanitizerFunction,
 };
 
 
-function makeEventToReceiveProperty( root, property, sendToTargets, sanitizer ) {
+function makeEventToReceiveProperty( root, { property, targets, sendType }, sanitizer ) {
 
     return event => {
 
-        const targetElements = sendToTargets ? root.querySelectorAll( sendToTargets ) : undefined;
+        const targetElements = targets ? root.querySelectorAll( targets ) : undefined;
         if ( ! targetElements ) {
             return; // No element to send to
         }
@@ -32,7 +36,10 @@ function makeEventToReceiveProperty( root, property, sendToTargets, sanitizer ) 
             }
             if ( content === undefined ) {
                 continue; // Ignore if not defined
+            } else if ( sendType === 'json' ) {
+                content = parseUnquotedJSON( content );
             }
+
             receive( el, content, allowedPropMap, sanitizer );
         }
     };
@@ -66,7 +73,7 @@ function receive( target, content, allowedPropMap, sanitizer ) {
         return;
     }
 
-    target[ targetProperty ] = content;
+    target[ targetProperty ] = content.toString();
 }
 
 
@@ -78,6 +85,7 @@ export function register( root: HTMLElement, options?: Options ) {
         const sendWhat = el.getAttribute( 'send-what' );
         const sendEvent = el.getAttribute( 'send-on' );
         const sendTargets = el.getAttribute( 'send-to' );
+        const sendAsType = el.getAttribute( 'send-as' );
 
         if ( ! sendEvent || ! sendTargets ) {
             continue;
@@ -86,7 +94,7 @@ export function register( root: HTMLElement, options?: Options ) {
         const event = sendEvent.trim().toLowerCase();
         // TODO: allow abort signal to unregister all events
         if ( event === 'change' || event === 'blur' || event === 'focus' || event === 'click' ) {
-            el.addEventListener( event, makeEventToReceiveProperty( root, sendWhat, sendTargets, options?.sanitizer ) );
+            el.addEventListener( event, makeEventToReceiveProperty( root, { property: sendWhat, targets: sendTargets, sendType: sendAsType }, options?.sanitizer ) );
         }
     }
 }
