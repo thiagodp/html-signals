@@ -5,42 +5,71 @@ type SanitizerFunction = ( content: string ) => string;
 
 
 export type Options = {
-    document?: Document,
+    window?: Window,
     sanitizer?: SanitizerFunction,
 };
 
 
-function makeEventToReceiveProperty( root, { property, targets, sendType }, sanitizer ) {
+function makeEventToReceiveProperty( root, { property, targets, sendType, prevent }, options?: Options ) {
 
     return event => {
 
-        const targetElements = targets ? root.querySelectorAll( targets ) : undefined;
-        if ( ! targetElements ) {
-            return; // No element to send to
+        if ( prevent ) {
+            event.preventDefault();
+            event.stopPropagation();
         }
 
-        const prop = property ? property.trim().toLowerCase() : '';
+        // Evaluate $history
+        const historyResult = /[ ]*,?[ ]*\$history/i.exec( targets );
+        let addToHistoryBeforeElements = false;
+        let addToHistoryAfterElements = false;
+        if ( historyResult ) {
+            const lcTargets = targets.toLowerCase();
+            // Remove from targets
+            targets = targets.replace( historyResult[ 0 ], '' );
+            // Evaluate when to add to history
+            const history = '$history';
+            addToHistoryBeforeElements = lcTargets.startsWith( history );
+            if ( ! addToHistoryBeforeElements ) {
+                addToHistoryAfterElements = lcTargets.endsWithHistory( history );
+            }
+        }
 
+        // Evaluate the sender property
+        const prop = property ? property.trim().toLowerCase() : '';
         const allowedPropMap = { 'value': 'value', 'text': 'innerText', 'html': 'innerHTML' };
         const senderProperty = allowedPropMap[ prop ] || prop; // Allow unmapped properties
-
         const sender = event.target;
-        for ( const el of targetElements ) {
-            let content = sender[ senderProperty ];
-            if ( content === undefined ) {
-                if ( senderProperty === 'innerText' || senderProperty === 'text' ) {
-                    content = sender[ 'textContent' ];
-                } else if ( senderProperty.indexOf( 'data-' ) === 0 ) { // "data-" attributes
-                    content = sender.getAttribute( senderProperty );
-                }
-            }
-            if ( content === undefined ) {
-                continue; // Ignore if not defined
-            } else if ( sendType === 'json' ) {
-                content = parseUnquotedJSON( content );
-            }
 
-            receive( el, content, allowedPropMap, sanitizer );
+        // Get content
+        let content = sender[ senderProperty ];
+        if ( content === undefined ) {
+            if ( senderProperty === 'innerText' || senderProperty === 'text' ) {
+                content = sender[ 'textContent' ];
+            } else if ( senderProperty.indexOf( 'data-' ) === 0 ) { // "data-" attributes
+                content = sender.getAttribute( senderProperty );
+            }
+        }
+        if ( content === undefined ) {
+            return;
+        } else if ( sendType === 'json' ) {
+            content = parseUnquotedJSON( content );
+        }
+
+        // History
+        if ( addToHistoryBeforeElements && options?.window ) {
+            options.window.history.pushState( null, '', content );
+        }
+
+        // Select target elements and send the content
+        const targetElements = targets ? root.querySelectorAll( targets ) : [];
+        for ( const el of targetElements ) {
+            receive( el, content, allowedPropMap, options?.sanitizer );
+        }
+
+        // History
+        if ( addToHistoryAfterElements && options?.window ) {
+            options.window.history.pushState( null, '', content );
         }
     };
 }
@@ -86,6 +115,7 @@ export function register( root: HTMLElement, options?: Options ) {
         const sendEvent = el.getAttribute( 'send-on' );
         const sendTargets = el.getAttribute( 'send-to' );
         const sendAsType = el.getAttribute( 'send-as' );
+        const prevent = el.getAttribute( 'prevent' ) !== null ? true : null;
 
         if ( ! sendEvent || ! sendTargets ) {
             continue;
@@ -94,7 +124,8 @@ export function register( root: HTMLElement, options?: Options ) {
         const event = sendEvent.trim().toLowerCase();
         // TODO: allow abort signal to unregister all events
         if ( event === 'change' || event === 'blur' || event === 'focus' || event === 'click' ) {
-            el.addEventListener( event, makeEventToReceiveProperty( root, { property: sendWhat, targets: sendTargets, sendType: sendAsType }, options?.sanitizer ) );
+            el.addEventListener( event, makeEventToReceiveProperty( root,
+                { property: sendWhat, targets: sendTargets, sendType: sendAsType, prevent }, options ) );
         }
     }
 }

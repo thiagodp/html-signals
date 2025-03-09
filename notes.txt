@@ -1,56 +1,44 @@
-Idea htmx+
+Idea: htmx+
 
 Html signals :)
 
-send="prop1, prop2"
+send-what="prop1, prop2"
 send-on="event1, event2"
 send-to="target1, target2"
 
-idem p/ receive
+<!-- send-what="data-*" to send all data- fields. -->
 
-<!-- send=data to send all data-* fields. -->
+--
 
-<input  id="name" onchange="itemName.value=name.value" />
+<input id="name" onchange="x.innerText=name.value" />
+<div id="x" ></div>
 
-<input  id="name"
-    send="value"
-    send-on="change"
-    send-to="itemName"
-/>
+OR
 
-<button  id="remove"
-   send="data-id"
-   send-on="click"
-   send-to="#dlgRemove"
-   data-id="5"
->Remove</button>
+<input send-what="value" send-on="change" send-to="div" />
+<div receive-as="text" ></div>
 
-<dialog  id="dlgRemove"
-  on-receive-sth="showmodal"
-  >
-  <title>Remove item
-    <span id="itemName"
-      receive="text"
-    ></span>?</title>
+-------------
 
-  <form method="DELETE" ....
+<div send-what="text" send-on="click" send-to="span" >Hello</div>
+
+<span on-receive="(content) => content + ' World'" ></span>
 
 _________
 
 <a href="/foo"  prevent
-  send="href"
+  send-what="href"
   send-to="main"
 >Foo</a>
 
 <main
-    on-receive-apply="fetch"
-    receive="html"
-    error="text"
+    receive-as="fetch-html"
 ></main>
+
 ________
 
 <a href="/foo"  prevent
-  send="data-html,data-js,data-css"
+  send-what="data-html,data-js,data-css"
   send-to="main"
   data-html="/pages/foo.html"
   data-js="/src/foo.js"
@@ -58,27 +46,10 @@ ________
 >Foo</a>
 
 <main
-   receive-as="html-fetch,js-fetch,css-fetch"
+   receive-as="fetch-html,import,style"
+   on-error="({message}) => alert(message)"
 ></main>
 
-OR
-
-<main
-   on-receive-apply="fetch,import, style"
-   receive="html"
-  error="({ message})=>alert(message)"
-></main>
-
-
-
---> MELHORIAS SEMÂNTICAS
-
-send -> send-what
-receive -> receive-as
-
----
-
-on-receive="(content) => content + '1'"
 
 ======================================================
 
@@ -89,6 +60,11 @@ ALREADY SUPPORTED:
 - send-on with single event
 - on-receive with sync function
 - receive-as with "text" and "html"
+- $history as a special target for "send-to", that adds a URL to the browser history - e.g. send-to="div,$history"
+- prevent - to call preventDefault() on <a>, <form>, etc.
+
+LIMITATIONS:
+- $history must be at the beginning or at the end of "send-to"
 
 TO-DO:
 
@@ -101,7 +77,6 @@ TO-DO:
 - allow abort signal to unregister all events
 - send-on="receive"
 - form support to send-what="form-data" with send-as="json"
-- prevent - to call preventDefault() on <a>, <form>, etc.
 
 - $history as a special target for "send-to", to add a URL to the browser history ?
       Example:

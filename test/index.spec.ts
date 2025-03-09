@@ -2,7 +2,7 @@ import { register } from '../src';
 
 import { JSDOM } from 'jsdom';
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi } from 'vitest';
 
 describe( 'register', () => {
 
@@ -261,6 +261,64 @@ describe( 'register', () => {
 
         const target = document.querySelector( '#foo' );
         expect( target.innerText ).toBe( '10' );
+    } );
+
+
+    it( 'can send a value to the browser history', () => {
+
+        // data-url is empty to avoid security errors during the test
+        document.body.innerHTML = `
+            <div
+                data-url=""
+                send-what="data-url"
+                send-on="click"
+                send-to="$history"
+            >Foo</div>
+        `;
+
+        register( document.body, { window } );
+
+        expect( window.history.length ).toBe( 1 );
+
+        const spy = vi.spyOn( window.history, 'pushState' );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        expect( spy ).toHaveBeenCalled();
+
+        vi.restoreAllMocks()
+    } );
+
+
+    it( 'can prevent the default behavior in a click', () => {
+
+        // console.log( window.location.href );
+
+        // data-url is empty to avoid security errors during the test
+        document.body.innerHTML = `
+            <a
+                href="/foo"
+                prevent
+                send-what="href"
+                send-on="click"
+                send-to="div"
+            >Foo</a>
+
+            <div receive-as="text" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'a' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        expect( window.location.href ).not.toBe( '/foo' );
+
+        const target = document.querySelector( 'div' );
+        expect( target.innerText ).toBe( '/foo' );
     } );
 
 } );
