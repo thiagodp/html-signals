@@ -1,21 +1,31 @@
 export function parseFunction( functionString ) {
-    const functionRegex = /^[ ]*(function ?[a-z_0-9]*)?[ ]*([a-z_0-9, ]+|\([ ]*[a-z_0-9, ]*[ ]*\){0,1}[ ]*)[ ]*(=>[ ]*([^{].*)|=>[ ]+\{(.+)\}|\{(.*)\})/i;
+    const functionRegex = /^(?:function[ ]*[a-z0-9_$]*)?[ ]*((?:\()?(([a-z0-9_${}]*)[, ]*)+(?:\))?)[ ]*(=>.*|{.*)/i;
     const r = functionRegex.exec( functionString );
     // console.log( r );
     if ( ! r ) {
         return { parameters: [], body: '' };
     }
-    let [ , , header, body ] = r;
-    // console.log( header );
-    // console.log( body );
-    const parameters = header.replaceAll( /\(|\)/g, '' ).split( ',' ).map( v => v.trim() ).filter( v => v.length > 0 );
+    let [ , header, , , body ] = r;
+    // console.log( 'header', header );
+    // console.log( 'body', body );
+    const parametersRegex = /(?:\{?[ ]*[a-z][a-z0-9$_, ]*\}?|[a-z][a-z0-9_$]*)/mig;
+    const rp: string[] = Array.from( header.matchAll( parametersRegex ) ).map( arr => arr[ 0 ].trim() );
+    // console.log( 'RP', rp );
+    let parameters: string[] = [];
+    for ( const p of rp ) {
+        if ( p.startsWith( '{' ) ) {
+            parameters.push( p );
+        } else {
+            parameters.push( ...p.split( ',' ).map( v => v.trim() ).filter( v => v.length > 0 ) );
+        }
+    }
+    // console.log( 'PARAMETERS', parameters );
     if ( body.startsWith( '=>' ) ) {
         body = body.replace( '=>', '' );
         if ( ! body.trim().startsWith( '{' ) ) {
             body = 'return' + body;
         }
     }
-    // console.log( 'parameters', parameters );
     return { parameters, body };
 }
 

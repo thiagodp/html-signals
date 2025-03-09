@@ -45,6 +45,15 @@ describe( '#parseFunction', () => {
             expect( r?.body ).toContain( '{ return "foo" }' );
         } );
 
+        it( 'can parse parameters with unstructured objects', () => {
+            const fn = '( { foo }, bar, { a, b } ) => { return "foo" }';
+            const r = parseFunction( fn );
+            expect( r?.parameters ).toContain( '{ foo }' );
+            expect( r?.parameters ).toContain( 'bar' );
+            expect( r?.parameters ).toContain( '{ a, b }' );
+            expect( r?.body ).toContain( '{ return "foo" }' );
+        } );
+
     } );
 
     describe( 'non arrow function', () => {
@@ -79,6 +88,15 @@ describe( '#parseFunction', () => {
             const fn = 'function zoo() { return "foo" }';
             const r = parseFunction( fn );
             expect( r?.parameters.length ).toBe( 0 );
+            expect( r?.body ).toContain( '{ return "foo" }' );
+        } );
+
+        it( 'can parse a named function with parameters containing unstructured objects', () => {
+            const fn = 'function ( { foo }, bar, { a, b } ) { return "foo" }';
+            const r = parseFunction( fn );
+            expect( r?.parameters ).toContain( '{ foo }' );
+            expect( r?.parameters ).toContain( 'bar' );
+            expect( r?.parameters ).toContain( '{ a, b }' );
             expect( r?.body ).toContain( '{ return "foo" }' );
         } );
 

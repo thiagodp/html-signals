@@ -136,8 +136,8 @@ TO-DO:
 
 SPA - example 1:
 
-<a href="/foo" prevent send-what="href" send-to="$history,span" send-as="text" >Foo</a>
-<a href="/bar" prevent send-what="href" send-to="$history,span" send-as="text" >Bar</a>
+<a href="/foo" prevent send-on="click" send-what="href" send-to="$history,span" send-as="text" >Foo</a>
+<a href="/bar" prevent send-on="click" send-what="href" send-to="$history,span" send-as="text" >Bar</a>
 
 <!-- on error, returns the error message as HTML -->
 <span hidden send-on="receive" send-as="fetch-html" send-to="main" ></span>
@@ -148,8 +148,8 @@ SPA - example 2:
 
 
 <!-- Error in "main" will cancel the addition to $history -->
-<a href="/foo" prevent send-what="href" send-to="main,$history" send-as="text" >Foo</a>
-<a href="/bar" prevent send-what="href" send-to="main,$history" send-as="text" >Bar</a>
+<a href="/foo" prevent send-on="click" send-what="href" send-to="main,$history" send-as="text"  >Foo</a>
+<a href="/bar" prevent send-on="click" send-what="href" send-to="main,$history" send-as="text"  >Bar</a>
 
 <!-- on error, returns the error message as HTML -->
 <main receive-as="fetch-html" ></main>
