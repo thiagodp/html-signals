@@ -1,8 +1,15 @@
 import { register } from '../src';
 
 import { JSDOM } from 'jsdom';
-
+import fetch from 'node-fetch';
 import { describe, it, expect, beforeAll, vi } from 'vitest';
+
+
+const sleep = timeMS => new Promise( ( resolve ) => {
+    setTimeout( resolve, timeMS );
+} );
+
+
 
 describe( 'register', () => {
 
@@ -319,6 +326,35 @@ describe( 'register', () => {
 
         const target = document.querySelector( 'div' );
         expect( target.innerText ).toBe( '/foo' );
+    } );
+
+
+    it( 'can fetch an html content', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://google.com"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+            >Foo</a>
+
+            <div id="x"
+                receive-as="fetch-html"
+                on-receive-error="(e,target) => console.log( e, target )"
+            ></div>
+        `;
+
+        register( document.body, { fetch } );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( 'html' );
     } );
 
 } );

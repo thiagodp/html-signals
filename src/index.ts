@@ -3,9 +3,9 @@ import { parseFunction, parseUnquotedJSON } from "./parser";
 
 type SanitizerFunction = ( content: string ) => string;
 
-
 export type Options = {
     window?: Window,
+    fetch?: ( input: any, init?: any ) => Promise< any >
     sanitizer?: SanitizerFunction,
 };
 
@@ -64,7 +64,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
         // Select target elements and send the content
         const targetElements = targets ? root.querySelectorAll( targets ) : [];
         for ( const el of targetElements ) {
-            receive( el, content, allowedPropMap, options?.sanitizer );
+            receive( el, content, allowedPropMap, options );
         }
 
         // History
@@ -77,9 +77,9 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
 
 
 
-function receive( target, content, allowedPropMap, sanitizer ) {
+function receive( target, content, allowedPropMap, options?: Options ) {
 
-    let onReceiveProp = target.getAttribute( 'on-receive' );
+    const onReceiveProp = target.getAttribute( 'on-receive' );
     if ( onReceiveProp ) {
         const r = parseFunction( onReceiveProp );
         if ( r ) {
@@ -94,11 +94,65 @@ function receive( target, content, allowedPropMap, sanitizer ) {
         return; // Nothing to do
     }
 
-    receiveAsProp = receiveAsProp.trim().toLowerCase();
-    const targetProperty = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
+    const onReceiveErrorProp = target.getAttribute( 'on-receive-error' );
+    let errorFn: Function | undefined = undefined;
+    if ( onReceiveErrorProp ) {
+        const r = parseFunction( onReceiveErrorProp );
+        if ( r ) {
+            const { parameters, body } = r;
+            errorFn = new Function( ...parameters, body );
+        }
+    }
 
-    if ( targetProperty === 'innerHTML' && typeof sanitizer === 'function' ) {
-        target[ targetProperty ] = sanitizer( content );
+
+    receiveAsProp = receiveAsProp.trim().toLowerCase();
+    let targetProperty = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
+
+    // fetch-html
+    if ( targetProperty === 'fetch-html' && options?.fetch ) {
+
+        // try {
+        //     const response = await options.window.fetch( content, { signal: AbortSignal.timeout( 5000 ) } );
+        //     if ( ! response.ok ) {
+        //         throw new Error( 'Error fetching HTML from ' + content + '. HTTP status: ' + response.status );
+        //     }
+        //     targetProperty = 'innerHTML';
+
+        // } catch ( err ) {
+        //     content = err.message;
+        // }
+
+        // console.log( 'FETCH', content );
+        options.fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
+            .then( response => {
+                // console.log( 'RESPONSE', response );
+                if ( ! response.ok ) {
+                    throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );
+                }
+                return response.text();
+            } )
+            .then( html => {
+                // console.log( 'HTML', html );
+                if ( typeof options?.sanitizer === 'function' ) {
+                    target[ 'innerHTML' ] = options.sanitizer( html );
+                } else {
+                    target[ 'innerHTML' ] = html;
+                }
+            } )
+            .catch( error => {
+                if ( errorFn ) {
+                    errorFn( error, target );
+                } else {
+                    target[ 'innerHTML' ] = error.message;
+                }
+            } );
+
+
+        return;
+    }
+
+    if ( targetProperty === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
+        target[ targetProperty ] = options.sanitizer( content );
         return;
     }
 
