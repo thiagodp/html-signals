@@ -73,6 +73,8 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
         if ( [ 'fetch-html', 'fetch-json' ].includes( sendType )  && options?.fetch ) {
 
             const isJSON = sendType === 'fetch-json';
+            const isHTML = sendType === 'fetch-html';
+            const prop = isHTML ? 'innerHTML' : 'innerText';
 
             options?.fetch( content, { signal: AbortSignal.timeout( 5000 ) } )
                 .then( response => {
@@ -88,7 +90,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
                     if ( errorFn ) {
                         errorFn( error, sender );
                     } else {
-                        sender[ 'innerHTML' ] = error.message;
+                        sender[ prop ] = error.message;
                     }
                 } );
 
@@ -152,42 +154,32 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     receiveAsProp = receiveAsProp.trim().toLowerCase();
     let targetProperty = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
 
-    // fetch-html
-    if ( targetProperty === 'fetch-html' && options?.fetch ) {
+    // fetch-*
+    if ( [ 'fetch-html', 'fetch-json' ].includes( targetProperty ) && options?.fetch ) {
 
-        // try {
-        //     const response = await options.window.fetch( content, { signal: AbortSignal.timeout( 5000 ) } );
-        //     if ( ! response.ok ) {
-        //         throw new Error( 'Error fetching HTML from ' + content + '. HTTP status: ' + response.status );
-        //     }
-        //     targetProperty = 'innerHTML';
+        const isJSON = targetProperty === 'fetch-json';
+        const isHTML = targetProperty === 'fetch-html';
+        const prop = isHTML ? 'innerHTML' : 'innerText';
 
-        // } catch ( err ) {
-        //     content = err.message;
-        // }
-
-        // console.log( 'FETCH', content );
-        options.fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
+        options.fetch( content, { signal: AbortSignal.timeout( 5000 ) } )
             .then( response => {
-                // console.log( 'RESPONSE', response );
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );
                 }
-                return response.text();
+                return isJSON ? response.json() : response.text();
             } )
-            .then( html => {
-                // console.log( 'HTML', html );
+            .then( data => {
                 if ( typeof options?.sanitizer === 'function' ) {
-                    target[ 'innerHTML' ] = options.sanitizer( html );
+                    target[ prop ] = options.sanitizer( data );
                 } else {
-                    target[ 'innerHTML' ] = html;
+                    target[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
                 }
             } )
             .catch( error => {
                 if ( errorFn ) {
                     errorFn( error, target );
                 } else {
-                    target[ 'innerHTML' ] = error.message;
+                    target[ prop ] = error.message;
                 }
             } );
 

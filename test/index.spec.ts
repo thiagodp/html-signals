@@ -419,4 +419,34 @@ describe( 'register', () => {
         expect( target.innerText ).toContain( 'delectus aut autem' );
     } );
 
+
+    it( 'can fetch a JSON content using "receive-as" with the received url', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://jsonplaceholder.typicode.com/todos/1"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+                send-as="text"
+            >Foo</a>
+
+            <div id="x"
+                receive-as="fetch-json"
+                on-receive-error="(e,target) => console.log( e, target )"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerText ).toContain( 'delectus aut autem' );
+    } );
+
 } );

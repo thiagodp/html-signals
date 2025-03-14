@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch JSON on send</title>
+    <title>Fetch JSON on receive</title>
 </head>
 <body>
     <style>div { cursor: pointer; } </style>
@@ -13,13 +13,12 @@
         send-what="data-url"
         send-on="click"
         send-to="#x"
-        send-as="fetch-json"
-        on-send-error="(e,target) => console.log( e, target )"
+        send-as="text"
     >Click me</a>
 
     <p id="x"
-        on-receive="( toDo ) => toDo.title";
-        receive-as="text"
+        receive-as="fetch-json"
+        on-receive-error="(e,target) => console.log( e, target )"
     ></p>
 
     <script type="module" >
