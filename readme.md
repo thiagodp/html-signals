@@ -1,6 +1,11 @@
 # html-signals
 
-> WIP
+> Increase HTML properties to reduce the need of writing JavaScript code
+
+👉 **Work-In-Progress! API is not stable yet and things may change.**
+
+📝 Documentation to appear - see [tests](/test/index.spec.ts) or [examples](/examples/) for now.
+
 
 ## Already supported
 
@@ -32,3 +37,7 @@
 - JSON content in element properties must have unquoted properties only (HTML limitation)
   - ex.: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
 - $history must be at the beginning or at the end of "send-to"
+
+## License
+
+[MIT](/LICENSE) (c) by [Thiago Delgado Pinto](https://github.com/thiagodp)
