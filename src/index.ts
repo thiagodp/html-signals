@@ -70,7 +70,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
         }
 
         // fetch-*
-        if ( [ 'fetch-html', 'fetch-json' ].includes( sendType )  && options?.fetch ) {
+        if ( [ 'fetch-html', 'fetch-json', 'fetch-text' ].includes( sendType )  && options?.fetch ) {
 
             const isJSON = sendType === 'fetch-json';
             const isHTML = sendType === 'fetch-html';
@@ -155,7 +155,7 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     let targetProperty = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
 
     // fetch-*
-    if ( [ 'fetch-html', 'fetch-json' ].includes( targetProperty ) && options?.fetch ) {
+    if ( [ 'fetch-html', 'fetch-json', 'fetch-text' ].includes( targetProperty ) && options?.fetch ) {
 
         const isJSON = targetProperty === 'fetch-json';
         const isHTML = targetProperty === 'fetch-html';

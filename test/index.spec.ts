@@ -449,4 +449,65 @@ describe( 'register', () => {
         expect( target.innerText ).toContain( 'delectus aut autem' );
     } );
 
+
+
+    it( 'can fetch an text content using "send-as" with the sent url', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://wikipedia.org"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+                send-as="fetch-text"
+                on-send-error="(e,target) => console.log( e, target )"
+            >Foo</a>
+
+            <div id="x"
+                receive-as="html"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( 'html' );
+    } );
+
+
+    it( 'can fetch an text content using "receive-as" with the received url', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://wikipedia.org"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+                send-as="text"
+            >Foo</a>
+
+            <div id="x"
+                receive-as="fetch-text"
+                on-receive-error="(e,target) => console.log( e, target )"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerText ).toContain( 'html' );
+    } );
+
 } );

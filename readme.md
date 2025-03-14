@@ -12,10 +12,13 @@
   - "json" - with unquoted properties only (HTML limitation)
   - "fetch-html"
   - "fetch-json"
+  - "fetch-text"
 - `receive-as` with:
   - "text"
   - "html"
   - "fetch-html"
+  - "fetch-json"
+  - "fetch-text"
 - `send-on` with single event
 - `on-receive` with sync function
 - `on-receive-error` with function

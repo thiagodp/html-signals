@@ -53,39 +53,6 @@ ________
 
 ======================================================
 
-TO-DO:
-
-- send-what with multiple properties, in order
-- send-on with multiple events, in order
-- on-receive with async function
-
-- allow abort signal to unregister all events
-- send-on="receive"
-- form - offer support to send-what="$form" (or other way), send-on="submit", and send-as="json"
-
-- on-receive="( id ) => $http.delete( `https://foo.com/bar/${id}`, { headers: { "Additional-Header-Here": "foo" } } )"
-- on-receive="( json ) => $http.postJSON( 'https://foo.com/bar', json, { headers: { "Additional-Header-Here": "foo" } } )"
-- on-receive="( json ) => $http.putJSON( `https://foo.com/bar/${json.id}`, json, { headers: { "Additional-Header-Here": "foo" } } )"
-
-- send-element ?
-    example:
-      <div send-element="span" send-as="html" send-on="click" send-to="#bar" >Example</div>
-      <span>Foo</span>
-      <div id="bar" ></div>
-    -> do not allow both "send-what" and "send-element"
-
-    <template>
-      <option></option>
-
-- send-as="dom"
-  example:
-    Instead of
-      on-receive="( html ) => { const d = document.createDocumentFragment(); d.innerHTML = html; d.firstChild.hidden = false; return d.innerHTML; }"
-    use
-      send-as="dom"
-    and then
-      on-receive="( el ) => { el.hidden = false; return el; }
-
 -----
 
 <form prevent send-what="$form" send-on="submit" send-as="json" send-to="div" >
