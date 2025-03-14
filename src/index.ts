@@ -35,7 +35,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
             }
         }
 
-        // Evaluate the sender property
+        // Evaluate the "sender-as" property
         const prop = property ? property.trim().toLowerCase() : '';
         const allowedPropMap = { 'value': 'value', 'text': 'innerText', 'html': 'innerHTML' };
         const senderProperty = allowedPropMap[ prop ] || prop; // Allow unmapped properties
@@ -56,8 +56,47 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
             content = parseUnquotedJSON( content );
         }
 
+
+        const onSendErrorProp = sender.getAttribute( 'on-receive-error' );
+        let errorFn: Function | undefined = undefined;
+        if ( onSendErrorProp ) {
+            const r = parseFunction( onSendErrorProp );
+            if ( r ) {
+                const { parameters, body } = r;
+                errorFn = new Function( ...parameters, body );
+            }
+        }
+
+        if ( sendType === 'fetch-html' ) {
+
+            fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
+                .then( response => {
+                    if ( ! response.ok ) {
+                        throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
+                    }
+                    return response.text();
+                } )
+                .then( html => {
+                    handleHistoryAndTargets( root, allowedPropMap, html, targets, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+                } )
+                .catch( error => {
+                    if ( errorFn ) {
+                        errorFn( error, sender );
+                    } else {
+                        sender[ 'innerHTML' ] = error.message;
+                    }
+                } );
+        } else {
+            handleHistoryAndTargets( root, allowedPropMap, content, targets, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+        }
+    };
+}
+
+
+function handleHistoryAndTargets( root, allowedPropMap, content, targets, { before, after }, options?: Options ) {
+
         // History
-        if ( addToHistoryBeforeElements && options?.window ) {
+        if ( before && options?.window ) {
             options.window.history.pushState( null, '', content );
         }
 
@@ -68,10 +107,9 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
         }
 
         // History
-        if ( addToHistoryAfterElements && options?.window ) {
+        if ( after && options?.window ) {
             options.window.history.pushState( null, '', content );
         }
-    };
 }
 
 

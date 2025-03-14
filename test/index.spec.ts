@@ -329,7 +329,7 @@ describe( 'register', () => {
     } );
 
 
-    it( 'can fetch an html content', async () => {
+    it( 'can fetch an html content using "receive-as" with the received url', async () => {
 
         document.body.innerHTML = `
             <div
@@ -342,6 +342,37 @@ describe( 'register', () => {
             <div id="x"
                 receive-as="fetch-html"
                 on-receive-error="(e,target) => console.log( e, target )"
+            ></div>
+        `;
+
+        register( document.body, { fetch } );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( 'html' );
+    } );
+
+
+
+    it( 'can fetch an html content using "send-as" with the sent url', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://google.com"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+                send-as="fetch-html"
+                on-send-error="(e,target) => console.log( e, target )"
+            >Foo</a>
+
+            <div id="x"
+                receive-as="html"
             ></div>
         `;
 

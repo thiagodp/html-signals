@@ -64,20 +64,18 @@ ALREADY SUPPORTED:
 - on-receive-error with function
 - $history as a special target for "send-to", that adds a URL to the browser history - e.g. send-to="div,$history"
 - prevent - to call preventDefault() on <a>, <form>, etc.
+- send-as with "fetch-html"
+- on-send-error with function
+
 
 LIMITATIONS:
 - $history must be at the beginning or at the end of "send-to"
 
 TO-DO:
 
-- send-as with "fetch-html"
-- receive-as with "fetch-html"
-
 - send-what with multiple properties, in order
 - send-on with multiple events, in order
 - on-receive with async function
-
-- on-receive-error/on-send-error/on-error
 
 - allow abort signal to unregister all events
 - send-on="receive"
@@ -158,6 +156,22 @@ SPA - example 2:
 
 
 >> Example 2 looks better on both concision and error handling.
+
+_________________________________________________
+
+
+<div
+  data-url="/foo"
+  send-what="data-url"
+  send-as="fetch-html"
+  send-to="#x"
+  send-on="click"
+>Foo</div>
+
+<span id="#x" receive-as="html" ></span>
+
+_________________________________________________
+
 
 -----
 
