@@ -53,24 +53,6 @@ ________
 
 ======================================================
 
-ALREADY SUPPORTED:
-- send-what with single property
-- send-to with query selector
-- send-as with "text", "html", and "json" - JSON with unquoted properties only (html limitation)
-- send-on with single event
-- on-receive with sync function
-- receive-as with "text" and "html"
-- receive-as with "fetch-html"
-- on-receive-error with function
-- $history as a special target for "send-to", that adds a URL to the browser history - e.g. send-to="div,$history"
-- prevent - to call preventDefault() on <a>, <form>, etc.
-- send-as with "fetch-html"
-- on-send-error with function
-
-
-LIMITATIONS:
-- $history must be at the beginning or at the end of "send-to"
-
 TO-DO:
 
 - send-what with multiple properties, in order

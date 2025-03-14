@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON</title>
+</head>
+<body>
+    <style>div { cursor: pointer; } </style>
+
+    <div
+        send-what="data-id"
+        send-on="click"
+        send-to="#foo"
+        data-id="{ title: 'Buy coffee', completed: false }"
+        send-as="json"
+    >Send TO-DO</div>
+
+    <div id="foo"
+        on-receive="( obj ) => obj.title"
+        receive-as="text"
+    ></div>
+
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

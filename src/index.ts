@@ -69,17 +69,20 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
             }
         }
 
-        if ( sendType === 'fetch-html' && options?.fetch ) {
+        // fetch-*
+        if ( [ 'fetch-html', 'fetch-json' ].includes( sendType )  && options?.fetch ) {
 
-            options?.fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
+            const isJSON = sendType === 'fetch-json';
+
+            options?.fetch( content, { signal: AbortSignal.timeout( 5000 ) } )
                 .then( response => {
                     if ( ! response.ok ) {
                         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
                     }
-                    return response.text();
+                    return isJSON ? response.json() : response.text();
                 } )
-                .then( html => {
-                    handleHistoryAndTargets( root, allowedPropMap, html, targets, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+                .then( data => {
+                    handleHistoryAndTargets( root, allowedPropMap, data, targets, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
                 } )
                 .catch( error => {
                     if ( errorFn ) {

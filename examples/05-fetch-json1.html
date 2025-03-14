@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch JSON 1</title>
+</head>
+<body>
+    <style>div { cursor: pointer; } </style>
+
+    <div
+        data-url="https://jsonplaceholder.typicode.com/todos/1"
+        send-what="data-url"
+        send-on="click"
+        send-to="#x"
+        send-as="fetch-json"
+        on-send-error="(e,target) => console.log( e, target )"
+    >Click me</a>
+
+    <p id="x"
+        on-receive="( toDo ) => toDo.title";
+        receive-as="text"
+    ></p>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

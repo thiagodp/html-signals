@@ -345,7 +345,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { fetch } );
+        register( document.body );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -359,7 +359,7 @@ describe( 'register', () => {
 
 
 
-    it( 'can fetch an html content using "send-as" with the sent url', async () => {
+    it( 'can fetch an HTML content using "send-as" with the sent url', async () => {
 
         document.body.innerHTML = `
             <div
@@ -376,7 +376,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { fetch } );
+        register( document.body );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -386,6 +386,37 @@ describe( 'register', () => {
 
         const target = document.querySelector( '#x' );
         expect( target.innerHTML ).toContain( 'html' );
+    } );
+
+
+    it( 'can fetch a JSON content using "send-as" with the sent url', async () => {
+
+        document.body.innerHTML = `
+            <div
+                data-url="https://jsonplaceholder.typicode.com/todos/1"
+                send-what="data-url"
+                send-on="click"
+                send-to="#x"
+                send-as="fetch-json"
+                on-send-error="(e,target) => console.log( e, target )"
+            >Foo</a>
+
+            <div id="x"
+                on-receive="( toDo ) => toDo.title";
+                receive-as="text"
+            ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        await sleep( 1000 );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerText ).toContain( 'delectus aut autem' );
     } );
 
 } );
