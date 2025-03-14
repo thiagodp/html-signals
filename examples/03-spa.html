@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPA</title>
+</head>
+<body>
+    <p>👉 Please open with an HTTP server at the project root folder</p>
+
+    <!-- Error in "main" will cancel the addition to $history -->
+    <a href="/examples/partials/foo.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Foo</a>
+    <a href="/examples/partials/bar.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Bar</a>
+
+    <!-- on error, returns the error message as HTML -->
+    <main receive-as="fetch-html" on-receive-error="({message},target) => console.log(message)" ></main>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>
