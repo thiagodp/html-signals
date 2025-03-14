@@ -3,9 +3,11 @@ import { parseFunction, parseUnquotedJSON } from "./parser";
 
 type SanitizerFunction = ( content: string ) => string;
 
+declare var window: typeof globalThis;
+
 export type Options = {
-    window?: Window,
-    fetch?: ( input: any, init?: any ) => Promise< any >
+    window?: typeof globalThis | Window,
+    fetch?: typeof globalThis.fetch,
     sanitizer?: SanitizerFunction,
 };
 
@@ -31,7 +33,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
             const history = '$history';
             addToHistoryBeforeElements = lcTargets.startsWith( history );
             if ( ! addToHistoryBeforeElements ) {
-                addToHistoryAfterElements = lcTargets.endsWithHistory( history );
+                addToHistoryAfterElements = lcTargets.endsWith( history );
             }
         }
 
@@ -67,9 +69,9 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
             }
         }
 
-        if ( sendType === 'fetch-html' ) {
+        if ( sendType === 'fetch-html' && options?.fetch ) {
 
-            fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
+            options?.fetch( content, { headers: { 'Accept': 'text/html' }, signal: AbortSignal.timeout( 5000 ) } )
                 .then( response => {
                     if ( ! response.ok ) {
                         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
@@ -86,6 +88,7 @@ function makeEventToReceiveProperty( root, { property, targets, sendType, preven
                         sender[ 'innerHTML' ] = error.message;
                     }
                 } );
+
         } else {
             handleHistoryAndTargets( root, allowedPropMap, content, targets, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
         }
@@ -199,6 +202,11 @@ function receive( target, content, allowedPropMap, options?: Options ) {
 
 
 export function register( root: HTMLElement, options?: Options ) {
+
+    options = options || {};
+
+    options!.window = options?.window || globalThis;
+    options!.fetch = options?.fetch || globalThis.fetch.bind( globalThis );
 
     const sendWhatElements = root.querySelectorAll( '[send-what]' );
     for ( const el of sendWhatElements ) {
