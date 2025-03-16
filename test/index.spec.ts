@@ -1,14 +1,18 @@
 import { register } from '../src';
 
 import { JSDOM } from 'jsdom';
+import { describe, it, expect, beforeAll, vi, afterAll, beforeEach } from 'vitest';
 import fetch from 'node-fetch';
-import { describe, it, expect, beforeAll, vi } from 'vitest';
+
+// import createFetchMock from 'vitest-fetch-mock';
+// const fetch = createFetchMock(vi);
+
+import fetchMock from 'fetch-mock';
 
 
 const sleep = timeMS => new Promise( ( resolve ) => {
     setTimeout( resolve, timeMS );
 } );
-
 
 
 describe( 'register', () => {
@@ -27,6 +31,21 @@ describe( 'register', () => {
         const jsdom = new JSDOM( html );
         window = jsdom.window;
         document = window.document;
+
+        // fetch.enableMocks();
+        fetchMock.config.allowRelativeUrls = true;
+    } );
+
+    afterAll( () => {
+        // fetch.disableMocks();
+
+        document = undefined;
+        window = undefined;
+    } );
+
+    beforeEach( () => {
+        // fetch.resetMocks();
+        fetchMock.removeRoutes();
     } );
 
 
@@ -329,7 +348,7 @@ describe( 'register', () => {
     } );
 
 
-    it( 'can fetch an html content using "receive-as" with the received url', async () => {
+    it( 'can fetch an HTML content using "receive-as" with the received url', async () => {
 
         document.body.innerHTML = `
             <div
@@ -337,7 +356,7 @@ describe( 'register', () => {
                 send-what="data-url"
                 send-on="click"
                 send-to="#x"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 receive-as="fetch-html"
@@ -345,16 +364,22 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { fetch } );
+
+        // fetch.mockResponseOnce( '<html></html>' );
+        fetchMock.mockGlobal().get( 'https:/google.com', '<html></html>' );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
         await sleep( 1000 );
+        // await sleep( 1 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerHTML ).toContain( 'html' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
 
 
@@ -369,23 +394,29 @@ describe( 'register', () => {
                 send-to="#x"
                 send-as="fetch-html"
                 on-send-error="(e,target) => console.log( e, target )"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 receive-as="html"
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { fetch } );
+
+        // fetch.mockResponseOnce( '<html></html>' );
+        // fetchMock.mockGlobal().get( 'https://google.com', '<html></html>' );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
         await sleep( 1000 );
+        // await sleep( 1 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerHTML ).toContain( 'html' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
 
 
@@ -399,7 +430,7 @@ describe( 'register', () => {
                 send-to="#x"
                 send-as="fetch-json"
                 on-send-error="(e,target) => console.log( e, target )"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 on-receive="( toDo ) => toDo.title";
@@ -409,14 +440,27 @@ describe( 'register', () => {
 
         register( document.body );
 
+        const obj = {
+            "userId": 1,
+            "id": 1,
+            "title": "delectus aut autem",
+            "completed": false
+        };
+
+        // fetch.mockResponseOnce(  objStr );
+        fetchMock.mockGlobal().get( 'https://jsonplaceholder.typicode.com/todos/1', obj );
+
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
-        await sleep( 1000 );
+        // await sleep( 1000 );
+        await sleep( 1 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerText ).toContain( 'delectus aut autem' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
 
 
@@ -429,7 +473,7 @@ describe( 'register', () => {
                 send-on="click"
                 send-to="#x"
                 send-as="text"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 receive-as="fetch-json"
@@ -439,19 +483,32 @@ describe( 'register', () => {
 
         register( document.body );
 
+        const obj = {
+            "userId": 1,
+            "id": 1,
+            "title": "delectus aut autem",
+            "completed": false
+        };
+
+        // fetch.mockResponseOnce( objStr );
+        fetchMock.mockGlobal().get( 'https://jsonplaceholder.typicode.com/todos/1', obj );
+
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
-        await sleep( 1000 );
+        // await sleep( 1000 );
+        await sleep( 1 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerText ).toContain( 'delectus aut autem' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
 
 
 
-    it( 'can fetch an text content using "send-as" with the sent url', async () => {
+    it( 'can fetch an TEXT content using "send-as" with the sent url', async () => {
 
         document.body.innerHTML = `
             <div
@@ -461,27 +518,34 @@ describe( 'register', () => {
                 send-to="#x"
                 send-as="fetch-text"
                 on-send-error="(e,target) => console.log( e, target )"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 receive-as="html"
             ></div>
         `;
 
-        register( document.body );
+        // register( document.body );
+        register( document.body, { fetch } );
+
+        // fetch.mockResponseOnce( '<html></html>' );
+        // fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
+        // await sleep( 1 );
         await sleep( 1000 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerHTML ).toContain( 'html' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
 
 
-    it( 'can fetch an text content using "receive-as" with the received url', async () => {
+    it( 'can fetch a TEXT content using "receive-as" with the received url', async () => {
 
         document.body.innerHTML = `
             <div
@@ -490,7 +554,7 @@ describe( 'register', () => {
                 send-on="click"
                 send-to="#x"
                 send-as="text"
-            >Foo</a>
+            >Foo</div>
 
             <div id="x"
                 receive-as="fetch-text"
@@ -500,14 +564,297 @@ describe( 'register', () => {
 
         register( document.body );
 
+        // fetch.mockResponseOnce( '<html></html>' );
+        fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
+
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
         source.dispatchEvent( event );
 
-        await sleep( 1000 );
+        // await sleep( 1000 );
+        await sleep( 1 );
 
         const target = document.querySelector( '#x' );
         expect( target.innerText ).toContain( 'html' );
+
+        // expect( fetch.requests().length ).toEqual( 1 );
     } );
+
+
+
+    it( 'can send an element', () => {
+
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="element"
+            >Foo</div>
+
+            <div id="x" receive-as="element" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( element );
+    } );
+
+
+    it( 'can send an element clone', () => {
+
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="element-clone"
+            >Foo</div>
+
+            <div id="x" receive-as="element" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( element );
+
+        const firstP = document.querySelector( 'p' );
+        firstP.innerText = 'Hello World';
+
+        expect( target.innerHTML ).toContain( element ); // Keeps the old value
+    } );
+
+
+    it( 'can receive an element clone', () => {
+
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="element"
+            >Foo</div>
+
+            <div id="x" receive-as="element-clone" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( element );
+
+        const firstP = document.querySelector( 'p' );
+        firstP.innerText = 'Hello World';
+
+        expect( target.innerHTML ).toContain( element ); // Keeps the old value
+    } );
+
+
+    it( 'can send as HTML and can receive as an element', () => {
+
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="html"
+            >Foo</div>
+
+            <div id="x" receive-as="element" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( element );
+    } );
+
+
+
+    it( 'can send as HTML and can receive as an element clone', () => {
+
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="html"
+            >Foo</div>
+
+            <div id="x" receive-as="element-clone" ></div>
+        `;
+
+        register( document.body );
+
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( element );
+
+        const firstP = document.querySelector( 'p' );
+        firstP.innerText = 'Hello World';
+
+        expect( target.innerHTML ).toContain( element ); // Keeps the old value
+    } );
+
+
+    it( 'must not allow to use both "send-what" and "send-element"', () => {
+
+        document.body.innerHTML = `
+            <p>Hello</p>
+
+            <div
+                foo="bar"
+                send-element="p"
+                send-what="foo"
+                send-on="click"
+                send-to="#x"
+                send-as="html"
+            >Foo</div>
+
+            <div id="x" receive-as="element-clone" ></div>
+        `;
+
+        expect( () => {
+            register( document.body );
+        } ).toThrowError();
+    } );
+
+
+    describe( 'element-clone with a template', () => {
+
+        it( 'will clone the template content when declared in "send-as"', () => {
+
+            const element = '<p>Hello</p>';
+
+            document.body.innerHTML = `
+                <template>
+                  ${element}
+                </template>
+
+                <div
+                    send-element="template"
+                    send-on="click"
+                    send-to="#x"
+                    send-as="element-clone"
+                >Foo</div>
+
+                <div id="x" receive-as="element" ></div>
+            `;
+
+            register( document.body );
+
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
+
+            const target = document.querySelector( '#x' );
+            expect( target.innerHTML ).not.toContain( 'template' );
+            expect( target.innerHTML ).toContain( element );
+        } );
+
+
+        it( 'will clone the template content when declared in "receive-as"', () => {
+
+            const element = '<p>Hello</p>';
+
+            document.body.innerHTML = `
+                <template>
+                  ${element}
+                </template>
+
+                <div
+                    send-element="template"
+                    send-on="click"
+                    send-to="#x"
+                    send-as="element"
+                >Foo</div>
+
+                <div id="x" receive-as="element-clone" ></div>
+            `;
+
+            register( document.body );
+
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
+
+            const target = document.querySelector( '#x' );
+            expect( target.innerHTML ).not.toContain( 'template' );
+            expect( target.innerHTML ).toContain( element );
+        } );
+
+    } );
+
+
+    // it( 'can handle the element in "on-receive" when "send-element" is used', () => {
+
+    //     const element = '<p>Hello</p>';
+
+    //     document.body.innerHTML = `
+    //         ${element}
+
+    //         <div
+    //             send-element="p"
+    //             send-on="click"
+    //             send-to="#x"
+    //             send-as="element"
+    //         >Foo</div>
+
+    //         <div id="x"
+    //             on-receive="(el) => { el.innerText = 'World'; return el; }"
+    //             receive-as="element"
+    //         ></div>
+    //     `;
+
+    //     register( document.body );
+
+    //     const source = document.querySelector( 'div' );
+    //     const event = new window.Event( 'click', {} );
+    //     source.dispatchEvent( event );
+
+    //     const target = document.querySelector( '#x' );
+    //     expect( target.innerHTML ).toContain( 'World' );
+    // } );
 
 } );

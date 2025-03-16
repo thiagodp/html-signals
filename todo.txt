@@ -12,14 +12,6 @@ TO-DO:
 - on-receive="( json ) => $http.postJSON( 'https://foo.com/bar', json, { headers: { "Additional-Header-Here": "foo" } } )"
 - on-receive="( json ) => $http.putJSON( `https://foo.com/bar/${json.id}`, json, { headers: { "Additional-Header-Here": "foo" } } )"
 
-- send-element ?
-    example:
-      <div send-element="span" send-as="html" send-on="click" send-to="#bar" >Example</div>
-      <span>Foo</span>
-      <div id="bar" ></div>
-    -> do not allow both "send-what" and "send-element"
-
-
 - send-as="dom"
   example:
     Instead of
@@ -28,3 +20,4 @@ TO-DO:
       send-as="dom"
     and then
       on-receive="( el ) => { el.hidden = false; return el; }
+
