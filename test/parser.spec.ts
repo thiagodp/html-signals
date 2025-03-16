@@ -125,4 +125,10 @@ describe( '#parseUnquotedJSON', () => {
         expect( r ).toEqual( { name: "Bob", children: [ "Suzan", "Alice" ] } );
     } );
 
+    it( 'can also parse an object with single-quoted properties', () => {
+        const value = `{ 'name': "Bob", 'age': 20, 'married': true, 'address': null, 'company': undefined }`;
+        const r = parseUnquotedJSON( value );
+        expect( r ).toEqual( { name: "Bob", age: 20, married: true, address: null, company: undefined } );
+    } );
+
 } );

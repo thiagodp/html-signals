@@ -42,8 +42,9 @@
 
 ## Limitations
 
-- JSON content in element properties must have unquoted properties only (HTML limitation)
+- JSON content in element properties must have unquoted or single-quoted properties (HTML limitation)
   - ex.: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
+  - ex.: `<span data-todo="{ 'title': 'Buy coffee', 'completed': false }" ></span>`
 - `$history` must be at the beginning or at the end of "send-to"
 
 ## License

@@ -30,6 +30,12 @@ export function parseFunction( functionString ) {
 }
 
 
+/**
+ * Parse a JSON string with unquoted or single-quoted properties.
+ *
+ * @param jsonString Input string with JSON content
+ * @returns string with JSON
+ */
 export function parseUnquotedJSON( jsonString: string ): string {
 
     // Replace unquoted keys with quoted keys
