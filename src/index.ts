@@ -9,6 +9,7 @@ type GenericFetch = ( input: any, init?: any ) => Promise< any >;
 
 export type Options = {
     window?: typeof globalThis | Window,
+    document?: Document,
     fetch?: typeof globalThis.fetch | GenericFetch,
     sanitizer?: SanitizerFunction,
 };
@@ -39,11 +40,11 @@ export function register( root: HTMLElement, options?: Options ) {
     options!.fetch = options?.fetch || globalThis.fetch.bind( globalThis );
 
     const elements = root.querySelectorAll( '[send-to]' );
-    for ( const el of elements ) {
+    for ( let el of elements ) {
 
         const sendWhat = el.getAttribute( 'send-what' ) || undefined;
         const sendElement = el.getAttribute( 'send-element' ) || undefined;
-        const sendOn = el.getAttribute( 'send-on' );
+        let sendOn = el.getAttribute( 'send-on' );
         const sendTo = el.getAttribute( 'send-to' );
         const sendAs = el.getAttribute( 'send-as' ) || undefined;
 
@@ -59,9 +60,15 @@ export function register( root: HTMLElement, options?: Options ) {
 
         // TODO: allow abort signal to unregister all events
 
-        const event = sendOn.trim().toLowerCase();
-        if ( event === 'change' || event === 'blur' || event === 'focus' || event === 'click' ) {
-            el.addEventListener( event, makeEventToReceiveProperty( root,
+        sendOn = sendOn.trim().toLowerCase();
+        if ( sendOn === 'change' || sendOn === 'click' || sendOn === 'domcontentloaded' || sendOn === 'blur' || sendOn === 'focus' ) {
+
+            if ( sendOn === 'domcontentloaded' ) {
+                sendOn = 'DOMContentLoaded';
+                el = ( options.document || options.window.document ) as any;
+            }
+
+            el.addEventListener( sendOn, makeEventToReceiveProperty( root,
                 { sendWhat, sendElement, sendTo, sendAs, prevent }, options ) );
         }
     }

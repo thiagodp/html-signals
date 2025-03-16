@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load</title>
+</head>
+<body>
+    <p>Hello</p> <!-- It should change to "Hello, World" and be moved to <div> -->
+
+    <span
+        send-element="p"
+        send-on="domcontentloaded"
+        send-to="#x"
+        send-as="element"
+    ></span>
+
+    <div id="x"
+        on-receive="(el) => { el.textContent += ', World'; return el; }"
+        receive-as="element"
+    ></div>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

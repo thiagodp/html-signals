@@ -28,7 +28,12 @@
   - "fetch-text"
   - "element"
   - "element-clone"
-- `send-on` with single event
+- `send-on` with single event:
+  - "change"
+  - "click"
+  - "blur
+  - "focus"
+  - "domcontentloaded"
 - `on-receive` with sync function
 - `on-receive-error` with function
 - `on-send-error` with function

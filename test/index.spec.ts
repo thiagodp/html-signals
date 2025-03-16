@@ -895,4 +895,32 @@ describe( 'register', () => {
 
     } );
 
+
+    it( 'can execute with send-on="domcontentloaded"', () => {
+        const element = '<p>Hello</p>';
+
+        document.body.innerHTML = `
+            ${element}
+
+            <div
+                send-element="p"
+                send-on="domcontentloaded"
+                send-to="#x"
+                send-as="element"
+            >Foo</div>
+
+            <div id="x"
+                on-receive="(el) => { el.textContent = 'World'; return el; }"
+                receive-as="element"
+            ></div>
+        `;
+
+        register( document.body, { document } );
+
+        document.dispatchEvent( new window.Event( 'DOMContentLoaded', {} ) );
+
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( 'World' );
+    } );
+
 } );
