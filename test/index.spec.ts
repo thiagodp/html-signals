@@ -827,34 +827,34 @@ describe( 'register', () => {
     } );
 
 
-    // it( 'can handle the element in "on-receive" when "send-element" is used', () => {
+    it( 'can handle the element in "on-receive" when "send-element" is used', () => {
 
-    //     const element = '<p>Hello</p>';
+        const element = '<p>Hello</p>';
 
-    //     document.body.innerHTML = `
-    //         ${element}
+        document.body.innerHTML = `
+            ${element}
 
-    //         <div
-    //             send-element="p"
-    //             send-on="click"
-    //             send-to="#x"
-    //             send-as="element"
-    //         >Foo</div>
+            <div
+                send-element="p"
+                send-on="click"
+                send-to="#x"
+                send-as="element"
+            >Foo</div>
 
-    //         <div id="x"
-    //             on-receive="(el) => { el.innerText = 'World'; return el; }"
-    //             receive-as="element"
-    //         ></div>
-    //     `;
+            <div id="x"
+                on-receive="(el) => { el.textContent = 'World'; return el; }"
+                receive-as="element"
+            ></div>
+        `;
 
-    //     register( document.body );
+        register( document.body );
 
-    //     const source = document.querySelector( 'div' );
-    //     const event = new window.Event( 'click', {} );
-    //     source.dispatchEvent( event );
+        const source = document.querySelector( 'div' );
+        const event = new window.Event( 'click', {} );
+        source.dispatchEvent( event );
 
-    //     const target = document.querySelector( '#x' );
-    //     expect( target.innerHTML ).toContain( 'World' );
-    // } );
+        const target = document.querySelector( '#x' );
+        expect( target.innerHTML ).toContain( 'World' );
+    } );
 
 } );

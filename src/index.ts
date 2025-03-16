@@ -81,22 +81,6 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
             event.stopPropagation();
         }
 
-        // Evaluate $history
-        const historyResult = /[ ]*,?[ ]*\$history/i.exec( sendTo );
-        let addToHistoryBeforeElements = false;
-        let addToHistoryAfterElements = false;
-        if ( historyResult ) {
-            const lcTargets = sendTo.toLowerCase();
-            // Remove from targets
-            sendTo = sendTo.replace( historyResult[ 0 ], '' );
-            // Evaluate when to add to history
-            const history = '$history';
-            addToHistoryBeforeElements = lcTargets.startsWith( history );
-            if ( ! addToHistoryBeforeElements ) {
-                addToHistoryAfterElements = lcTargets.endsWith( history );
-            }
-        }
-
         const sender = event.target;
         const allowedPropMap = { 'value': 'value', 'text': 'innerText', 'html': 'innerHTML' };
 
@@ -117,17 +101,23 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
                 receive( target, element, allowedPropMap, options );
             }
 
-            // if ( element && target ) {
-
-            //     if ( sendAs === 'element-clone' ) {
-            //         element = element.cloneNode( true );
-            //     }
-
-            //     console.log( "TARGET WILL ADD" );
-            //     target.append( element );
-            // }
-
             return;
+        }
+
+        // Evaluate $history
+        const historyResult = /[ ]*,?[ ]*\$history/i.exec( sendTo );
+        let addToHistoryBeforeElements = false;
+        let addToHistoryAfterElements = false;
+        if ( historyResult ) {
+            const lcTargets = sendTo.toLowerCase();
+            // Remove from targets
+            sendTo = sendTo.replace( historyResult[ 0 ], '' );
+            // Evaluate when to add to history
+            const history = '$history';
+            addToHistoryBeforeElements = lcTargets.startsWith( history );
+            if ( ! addToHistoryBeforeElements ) {
+                addToHistoryAfterElements = lcTargets.endsWith( history );
+            }
         }
 
         // send-what
@@ -255,13 +245,16 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             const { parameters, body } = r;
             const fn = new Function( ...parameters, body );
             try {
+                // console.log( 'WILL RUN on-receive', '\n\tbefore:', content );
                 content = fn( content );
+                // console.log( '\tafter:', content );
             } catch ( error ) {
                 if ( errorFn ) {
                     errorFn( error, target );
                 } else {
                     target[ receiveAsProp ] = error.message;
                 }
+                // console.error( error );
                 return; // stop on error
             }
         }
