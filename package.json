@@ -35,6 +35,7 @@
     "build:release": "rimraf dist && microbundle --no-sourcemap"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
     "fetch-mock": "^12.5.2",
     "jsdom": "^26.0.0",
     "microbundle": "^0.15.1",

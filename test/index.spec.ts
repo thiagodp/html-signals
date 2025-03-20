@@ -9,7 +9,6 @@ import fetch from 'node-fetch';
 
 import fetchMock from 'fetch-mock';
 
-
 const sleep = timeMS => new Promise( ( resolve ) => {
     setTimeout( resolve, timeMS );
 } );
@@ -63,7 +62,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'input' );
         source.value = 'Hello';
@@ -94,7 +93,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'input' );
         source.value = 'Hello';
@@ -129,7 +128,7 @@ describe( 'register', () => {
             ></span>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'input' );
         source.value = 'Hello';
@@ -163,7 +162,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -190,7 +189,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -218,7 +217,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -248,7 +247,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -278,7 +277,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -308,7 +307,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -366,7 +365,7 @@ describe( 'register', () => {
             <div receive-as="text" ></div>
         `;
 
-        register( document.body );
+        register( document.body, { window } );
 
         const source = document.querySelector( 'a' );
         const event = new window.Event( 'click', {} );
@@ -397,7 +396,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch } );
+            register( document.body, { fetch, window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https:/google.com', '<html></html>' );
@@ -434,7 +433,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch } );
+            register( document.body, { fetch, window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             // fetchMock.mockGlobal().get( 'https://google.com', '<html></html>' );
@@ -471,7 +470,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const obj = {
                 "userId": 1,
@@ -514,7 +513,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const obj = {
                 "userId": 1,
@@ -559,7 +558,7 @@ describe( 'register', () => {
             `;
 
             // register( document.body );
-            register( document.body, { fetch } );
+            register( document.body, { fetch, window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             // fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
@@ -595,7 +594,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
@@ -635,7 +634,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -663,7 +662,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -696,7 +695,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -729,7 +728,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -758,7 +757,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -792,7 +791,7 @@ describe( 'register', () => {
             `;
 
             expect( () => {
-                register( document.body );
+                register( document.body, { window } );
             } ).toThrowError();
         } );
 
@@ -818,7 +817,7 @@ describe( 'register', () => {
                     <div id="x" receive-as="element" ></div>
                 `;
 
-                register( document.body );
+                register( document.body, { window }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
@@ -849,7 +848,7 @@ describe( 'register', () => {
                     <div id="x" receive-as="element-clone" ></div>
                 `;
 
-                register( document.body );
+                register( document.body, { window }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
@@ -883,7 +882,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body );
+            register( document.body, { window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -915,12 +914,20 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { document } );
+        register( document.body, { document, window } );
 
         document.dispatchEvent( new window.Event( 'DOMContentLoaded', {} ) );
 
         const target = document.querySelector( '#x' );
         expect( target.innerHTML ).toContain( 'World' );
+    } );
+
+
+    it( 'throws when root element, window and document are not defined', () => {
+
+        expect( () => {
+            register( undefined, { window: undefined, document: undefined } );
+        } ).toThrowError();
     } );
 
 } );

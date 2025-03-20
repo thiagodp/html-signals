@@ -1,9 +1,8 @@
 import { parseFunction, parseUnquotedJSON } from "./parser";
 
+// declare var window: Window & typeof globalThis;
 
 type SanitizerFunction = ( content: string ) => string;
-
-declare var window: typeof globalThis;
 
 type GenericFetch = ( input: any, init?: any ) => Promise< any >;
 
@@ -32,12 +31,47 @@ export type ReceiverProperties = {
 }
 
 
-export function register( root: HTMLElement, options?: Options ) {
+let controller: AbortController|undefined;
+let signal: AbortSignal|undefined;
+let timeout: number = 5000;
+
+
+function createAbortController( window?: any ) {
+    window = window || globalThis;
+    controller = new window.AbortController();
+    signal = controller!.signal;
+
+    return signal;
+}
+
+export function unregister(): void {
+
+    if ( ! controller ) {
+        return;
+    }
+
+    // Cancel all registered listeners and fetch executions (if any)
+    controller.abort();
+
+    signal = undefined;
+    controller = undefined;
+}
+
+
+export function register( root?: HTMLElement, options?: Options ): void {
 
     options = options || {};
-
     options!.window = options?.window || globalThis;
     options!.fetch = options?.fetch || globalThis.fetch.bind( globalThis );
+
+    root = root || options?.document?.body || options.window?.document?.body;
+
+    if ( ! root ) {
+        throw new Error( 'Please define the root element.' );
+    }
+
+    unregister();
+    const signal = createAbortController( options.window );
 
     const elements = root.querySelectorAll( '[send-to]' );
     for ( let el of elements ) {
@@ -69,13 +103,9 @@ export function register( root: HTMLElement, options?: Options ) {
             }
 
             el.addEventListener( sendOn, makeEventToReceiveProperty( root,
-                { sendWhat, sendElement, sendTo, sendAs, prevent }, options ) );
+                { sendWhat, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
         }
     }
-}
-
-
-export function unregister( root: HTMLElement ) {
 }
 
 
@@ -164,7 +194,7 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
             const isHTML = sendAs === 'fetch-html';
             const prop = isHTML ? 'innerHTML' : 'innerText';
 
-            return options?.fetch( content, { signal: AbortSignal.timeout( 5000 ) } )
+            return options?.fetch( content, { signal: AbortSignal.any( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
                 .then( response => {
                     if ( ! response.ok ) {
                         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
@@ -183,7 +213,7 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
                 } );
 
             // try {
-            //     const response = await options?.fetch( content, { signal: AbortSignal.timeout( 5000 ) } );
+            //     const response = await options?.fetch( content, { signal: AbortSignal.any( [ signal, AbortSignal.timeout( timeout ) ] ) } );
             //     if ( ! response.ok ) {
             //         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
             //     }
@@ -291,7 +321,7 @@ function receive( target, content, allowedPropMap, options?: Options ) {
         const isHTML = receiveAsProp === 'fetch-html';
         const prop = isHTML ? 'innerHTML' : 'innerText';
 
-        return options.fetch( content, { signal: AbortSignal.timeout( 5000 ) } )
+        return options.fetch( content, { signal: AbortSignal.any( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
             .then( response => {
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );
@@ -314,7 +344,7 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             } );
 
         // try {
-        //     const response = await options?.fetch( content, { signal: AbortSignal.timeout( 5000 ) } );
+        //     const response = await options?.fetch( content, { signal: AbortSignal.any( [ signal, AbortSignal.timeout( timeout ) ] ) } );
         //     if ( ! response.ok ) {
         //         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
         //     }
