@@ -31,9 +31,49 @@ export type ReceiverProperties = {
 }
 
 
-let controller: AbortController|undefined;
-let signal: AbortSignal|undefined;
+let controller: any; // AbortController
+let signal: any; // AbortSignal
 let timeout: number = 5000;
+
+
+function addAnyPolyfillToAbortSignalIfNeeded( window?: any ) {
+
+    if ( typeof AbortSignal['any'] !== undefined ) {
+        return;
+    }
+
+    window = window || globalThis;
+
+    //
+    // Polyfill - obtained from https://github.com/mo/abortcontroller-polyfill/blob/master/src/abortsignal-ponyfill.js
+    //
+    AbortSignal['any'] = function ( iterable ) {
+
+        const { controller } = createAbortController( window );
+
+        function abort() {
+          controller.abort(this.reason);
+          clean();
+        }
+
+        function clean() {
+          for (const signal of iterable) {
+            signal.removeEventListener('abort', abort);
+          }
+        }
+
+        for (const signal of iterable) {
+            if (signal.aborted) {
+                controller.abort(signal.reason);
+                break;
+            }
+            signal.addEventListener('abort', abort);
+        }
+
+        return controller.signal;
+
+    };
+}
 
 
 function createAbortController( window?: any ) {
@@ -41,7 +81,7 @@ function createAbortController( window?: any ) {
     controller = new window.AbortController();
     signal = controller!.signal;
 
-    return signal;
+    return { controller, signal };
 }
 
 export function unregister(): void {
@@ -71,7 +111,7 @@ export function register( root?: HTMLElement, options?: Options ): void {
     }
 
     unregister();
-    const signal = createAbortController( options.window );
+    const { signal } = createAbortController( options.window );
 
     const elements = root.querySelectorAll( '[send-to]' );
     for ( let el of elements ) {
@@ -194,7 +234,9 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
             const isHTML = sendAs === 'fetch-html';
             const prop = isHTML ? 'innerHTML' : 'innerText';
 
-            return options?.fetch( content, { signal: AbortSignal.any( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
+            addAnyPolyfillToAbortSignalIfNeeded( options.window );
+
+            return options!.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
                 .then( response => {
                     if ( ! response.ok ) {
                         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
@@ -321,7 +363,9 @@ function receive( target, content, allowedPropMap, options?: Options ) {
         const isHTML = receiveAsProp === 'fetch-html';
         const prop = isHTML ? 'innerHTML' : 'innerText';
 
-        return options.fetch( content, { signal: AbortSignal.any( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
+        addAnyPolyfillToAbortSignalIfNeeded( options.window );
+
+        return options.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
             .then( response => {
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );
