@@ -1,4 +1,6 @@
-import { parseFunction, parseUnquotedJSON } from "./parser";
+import { parseUnquotedJSON } from "./parser";
+import { createAbortController, destroyAbortController, signal, addAnyPolyfillToAbortSignalIfNeeded } from "./abortion";
+import { makeFunction } from "./function";
 
 // declare var window: Window & typeof globalThis;
 
@@ -30,71 +32,13 @@ export type ReceiverProperties = {
     onReceiveError?: string
 }
 
-
-let controller: any; // AbortController
-let signal: any; // AbortSignal
+// Fetch timeout
 let timeout: number = 5000;
 
 
-function addAnyPolyfillToAbortSignalIfNeeded( window?: any ) {
-
-    if ( typeof AbortSignal['any'] !== undefined ) {
-        return;
-    }
-
-    window = window || globalThis;
-
-    //
-    // Polyfill - obtained from https://github.com/mo/abortcontroller-polyfill/blob/master/src/abortsignal-ponyfill.js
-    //
-    AbortSignal['any'] = function ( iterable ) {
-
-        const { controller } = createAbortController( window );
-
-        function abort() {
-          controller.abort(this.reason);
-          clean();
-        }
-
-        function clean() {
-          for (const signal of iterable) {
-            signal.removeEventListener('abort', abort);
-          }
-        }
-
-        for (const signal of iterable) {
-            if (signal.aborted) {
-                controller.abort(signal.reason);
-                break;
-            }
-            signal.addEventListener('abort', abort);
-        }
-
-        return controller.signal;
-
-    };
-}
-
-
-function createAbortController( window?: any ) {
-    window = window || globalThis;
-    controller = new window.AbortController();
-    signal = controller!.signal;
-
-    return { controller, signal };
-}
 
 export function unregister(): void {
-
-    if ( ! controller ) {
-        return;
-    }
-
-    // Cancel all registered listeners and fetch executions (if any)
-    controller.abort();
-
-    signal = undefined;
-    controller = undefined;
+    destroyAbortController();
 }
 
 
@@ -217,15 +161,8 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
         }
 
 
-        const onSendErrorProp = sender.getAttribute( 'on-receive-error' );
-        let errorFn: Function | undefined = undefined;
-        if ( onSendErrorProp ) {
-            const r = parseFunction( onSendErrorProp );
-            if ( r ) {
-                const { parameters, body } = r;
-                errorFn = new Function( ...parameters, body );
-            }
-        }
+        const onSendErrorProp = sender.getAttribute( 'on-send-error' ) || undefined;
+        const onSendErrorFn: Function | undefined = makeFunction( onSendErrorProp );
 
         // fetch-*
         if ( [ 'fetch-html', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
@@ -247,8 +184,8 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
                     return handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
                 } )
                 .catch( error => {
-                    if ( errorFn ) {
-                        errorFn( error, sender );
+                    if ( onSendErrorFn ) {
+                        onSendErrorFn( error, sender );
                     } else {
                         sender[ prop ] = error.message;
                     }
@@ -307,35 +244,24 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     receiveAsProp = receiveAsProp.trim().toLowerCase();
     receiveAsProp = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
 
-    const onReceiveErrorProp = target.getAttribute( 'on-receive-error' );
-    let errorFn: Function | undefined = undefined;
-    if ( onReceiveErrorProp ) {
-        const r = parseFunction( onReceiveErrorProp );
-        if ( r ) {
-            const { parameters, body } = r;
-            errorFn = new Function( ...parameters, body );
-        }
-    }
+    const onReceiveErrorProp = target.getAttribute( 'on-receive-error' ) || undefined;
+    const onReceiveErrorFn: Function | undefined = makeFunction( onReceiveErrorProp );
 
-    const onReceiveProp = target.getAttribute( 'on-receive' );
-    if ( onReceiveProp ) {
-        const r = parseFunction( onReceiveProp );
-        if ( r ) {
-            const { parameters, body } = r;
-            const fn = new Function( ...parameters, body );
-            try {
-                // console.log( 'WILL RUN on-receive', '\n\tbefore:', content );
-                content = fn( content );
-                // console.log( '\tafter:', content );
-            } catch ( error ) {
-                if ( errorFn ) {
-                    errorFn( error, target );
-                } else {
-                    target[ receiveAsProp ] = error.message;
-                }
-                // console.error( error );
-                return; // stop on error
+    const onReceiveProp = target.getAttribute( 'on-receive' ) || undefined;
+    const onReceiveFn: Function | undefined = makeFunction( onReceiveProp );
+    if ( onReceiveFn ) {
+        try {
+            // console.log( 'WILL RUN on-receive', '\n\tbefore:', content );
+            content = onReceiveFn( content );
+            // console.log( '\tafter:', content );
+        } catch ( error ) {
+            if ( onReceiveErrorFn ) {
+                onReceiveErrorFn( error, target );
+            } else {
+                target[ receiveAsProp ] = error.message;
             }
+            // console.error( error );
+            return; // stop on error
         }
     }
 
@@ -380,8 +306,8 @@ function receive( target, content, allowedPropMap, options?: Options ) {
                 }
             } )
             .catch( error => {
-                if ( errorFn ) {
-                    errorFn( error, target );
+                if ( onReceiveErrorFn ) {
+                    onReceiveErrorFn( error, target );
                 } else {
                     target[ prop ] = error.message;
                 }
