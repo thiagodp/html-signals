@@ -23,7 +23,7 @@
 - `send-as` with:
   - "text"
   - "html"
-  - "json" - with unquoted properties only (HTML limitation)
+  - "json" - with unquoted or single-quoted properties only (HTML limitation)
   - "fetch-html" (html, css)
   - "fetch-html-js" (html, css, javascript)
   - "fetch-json"
@@ -33,6 +33,7 @@
 - `receive-as` with:
   - "text"
   - "html"
+  - "json"
   - "fetch-html" (html, css)
   - "fetch-html-js" (html, css, javascript)
   - "fetch-json"
