@@ -165,7 +165,7 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
         const onSendErrorFn: Function | undefined = makeFunction( onSendErrorProp );
 
         // fetch-*
-        if ( [ 'fetch-html', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
+        if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
 
             const isJSON = sendAs === 'fetch-json';
             const isHTML = sendAs === 'fetch-html';
@@ -181,6 +181,28 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
                     return isJSON ? response.json() : response.text();
                 } )
                 .then( data => {
+
+                    if ( sendAs === 'fetch-html-js' ) {
+
+                        // History - before
+                        if ( addToHistoryBeforeElements && options?.window ) {
+                            options.window.history.pushState( null, '', content );
+                        }
+
+                        // Add the DOM to the first element only - scripts executed once.
+                        const targetElement = sendTo ? root.querySelector( sendTo ) : undefined;
+                        if ( targetElement ) {
+                            sendAsDOMToTarget( data, targetElement );
+                        }
+
+                        // History - after
+                        if ( addToHistoryAfterElements && options?.window ) {
+                            options.window.history.pushState( null, '', content );
+                        }
+
+                        return;
+                    }
+
                     return handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
                 } )
                 .catch( error => {
@@ -283,7 +305,7 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     }
 
     // fetch-*
-    if ( [ 'fetch-html', 'fetch-json', 'fetch-text' ].includes( receiveAsProp ) && options?.fetch ) {
+    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( receiveAsProp ) && options?.fetch ) {
 
         const isJSON = receiveAsProp === 'fetch-json';
         const isHTML = receiveAsProp === 'fetch-html';
@@ -299,11 +321,18 @@ function receive( target, content, allowedPropMap, options?: Options ) {
                 return isJSON ? response.json() : response.text();
             } )
             .then( data => {
+
+                if ( receiveAsProp === 'fetch-html-js' ) {
+                    sendAsDOMToTarget( data, target );
+                    return;
+                }
+
                 if ( typeof options?.sanitizer === 'function' ) {
                     target[ prop ] = options.sanitizer( data );
                 } else {
                     target[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
                 }
+
             } )
             .catch( error => {
                 if ( onReceiveErrorFn ) {
@@ -340,4 +369,55 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     }
 
     target[ receiveAsProp ] = content.toString();
+}
+
+
+function sendAsDOMToTarget( html: string, target: HTMLElement ): void {
+
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString( html, 'text/html' ); // throws
+    const scripts = doc.querySelectorAll( 'script' );
+
+    // Remove the scripts from the loaded document
+    for ( const script of scripts ) {
+        doc.body.removeChild( script );
+    }
+
+    // Remove the current content from the target
+    while ( target.lastChild ) {
+        target.removeChild( target.lastChild );
+    }
+
+    // Add the content without the scripts to the target
+    target.appendChild( doc.body );
+
+    // Copy all script tags and insert at the target element
+    for ( const script of scripts ) {
+
+        // // Remove the script from the target element if it already exists
+        // if ( script.id ) {
+        //     const existingScript = target.querySelector( 'script#' + script.id );
+        //     if ( existingScript ) {
+        //         target.removeChild( existingScript );
+        //         existingScript.remove();
+        //     }
+        // }
+
+        // Create a copy
+        const newScript = document.createElement( 'script' );
+        newScript.id = script.id;
+        newScript.type = script.type;
+        newScript.defer = script.defer;
+        if ( script.src ) {
+            newScript.src = script.src;
+        }
+        newScript.textContent = script.textContent;
+
+        // Add the copy to the target element
+        target.appendChild( newScript );
+
+        // Remove the original script
+        script.remove();
+    }
+
 }

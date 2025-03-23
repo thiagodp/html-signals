@@ -4,9 +4,10 @@ TO-DO:
 - send-on with multiple events, in order
 - on-receive with async function
 
-- allow abort signal to unregister all events
 - send-on="receive"
 - form - offer support to send-what="$form" (or other way), send-on="submit", and send-as="json"
+
+- on-mutate ?
 
 - on-receive="( id ) => $http.delete( `https://foo.com/bar/${id}`, { headers: { "Additional-Header-Here": "foo" } } )"
 - on-receive="( json ) => $http.postJSON( 'https://foo.com/bar', json, { headers: { "Additional-Header-Here": "foo" } } )"

@@ -24,7 +24,8 @@
   - "text"
   - "html"
   - "json" - with unquoted properties only (HTML limitation)
-  - "fetch-html"
+  - "fetch-html" (html, css)
+  - "fetch-html-js" (html, css, javascript)
   - "fetch-json"
   - "fetch-text"
   - "element"
@@ -32,7 +33,8 @@
 - `receive-as` with:
   - "text"
   - "html"
-  - "fetch-html"
+  - "fetch-html" (html, css)
+  - "fetch-html-js" (html, css, javascript)
   - "fetch-json"
   - "fetch-text"
   - "element"
