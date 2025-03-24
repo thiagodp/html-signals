@@ -8,8 +8,8 @@
 <body>
     <p>👉 Please open with an HTTP server at the project root folder</p>
 
-    <a href="/examples/partials/foo.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Foo</a>
-    <a href="/examples/partials/bar.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Bar</a>
+    <a href="/examples/partials/foo.html" prevent send-prop="href" send-on="click" send-to="main" send-as="text"  >Foo</a>
+    <a href="/examples/partials/bar.html" prevent send-prop="href" send-on="click" send-to="main" send-as="text"  >Bar</a>
 
     <main receive-as="fetch-html" on-receive-error="({message},target) => console.log(message)" ></main>
 

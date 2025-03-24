@@ -8,6 +8,9 @@ TO-DO:
 
 - send-on="receive"
 
+- send property that encapsulates all send-xxx?
+  send="data-href|click|main|text"
+
 - form - offer support to send-as="json"
 
 - on-mutate ?

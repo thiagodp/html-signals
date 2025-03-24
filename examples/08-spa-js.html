@@ -8,15 +8,23 @@
 <body>
     <p>👉 Please open with an HTTP server at the project root folder</p>
 
-    <a href="/examples/partials/foo.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Foo</a>
-    <a href="/examples/partials/bar.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Bar</a>
-    <a href="/examples/partials/zoo.html" prevent send-on="click" send-what="href" send-to="main" send-as="text"  >Zoo</a>
+    <a href="/foo" prevent
+        data-href="/examples/partials/foo.html"
+        send-prop="data-href" send-on="click" send-to="main" send-as="text"
+    >Foo</a>
+    <a href="/bar" prevent
+        data-href="/examples/partials/bar.html"
+        send-prop="data-href" send-on="click" send-to="main" send-as="text"
+    >Bar</a>
+    <a href="/zoo" prevent
+        data-href="/examples/partials/zoo.html"
+        send-prop="data-href" send-on="click" send-to="main" send-as="text"
+    >Zoo</a>
 
     <main receive-as="fetch-html-js" on-receive-error="({message},target) => console.log(message)" ></main>
 
     <script type="module" >
         import { register } from '../dist/index.esm.js';
-        console.log( typeof register );
         register( document.body );
     </script>
 </body>
