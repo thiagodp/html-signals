@@ -11,6 +11,11 @@ TO-DO:
 - send property that encapsulates all send-xxx?
   send="data-href|click|main|text"
 
+    but what about send-element? Use {} to encapsulate the query selector?
+      send="{#foo}|click|main"
+
+      send="props OR {element}|actions|targets|format"
+
 - form - offer support to send-as="json"
 
 - on-mutate ?
