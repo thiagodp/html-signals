@@ -1,6 +1,6 @@
 {
   "name": "html-signals",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "HTML properties to reduce the need of writing JavaScript code",
   "author": "Thiago Delgado Pinto",
   "keywords": [
@@ -12,7 +12,9 @@
     "json"
   ],
   "license": "MIT",
-  "repository": { "url": "https://github.com/thiagodp/html-signals" },
+  "repository": {
+    "url": "https://github.com/thiagodp/html-signals"
+  },
   "files": [
     "dist/index.*"
   ],
