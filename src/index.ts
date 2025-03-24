@@ -125,21 +125,8 @@ function makeEventToReceiveProperty( root, { sendProp, sendElement, sendAs, send
             return;
         }
 
-        // Evaluate $history
-        const historyResult = /[ ]*,?[ ]*\$history/i.exec( sendTo );
-        let addToHistoryBeforeElements = false;
-        let addToHistoryAfterElements = false;
-        if ( historyResult ) {
-            const lcTargets = sendTo.toLowerCase();
-            // Remove from targets
-            sendTo = sendTo.replace( historyResult[ 0 ], '' );
-            // Evaluate when to add to history
-            const history = '$history';
-            addToHistoryBeforeElements = lcTargets.startsWith( history );
-            if ( ! addToHistoryBeforeElements ) {
-                addToHistoryAfterElements = lcTargets.endsWith( history );
-            }
-        }
+        const { addToHistoryBeforeElements, addToHistoryAfterElements, targets } = evaluateHistory( sendTo );
+        sendTo = targets; // sendTo without $history
 
         // send-prop
         sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
@@ -420,4 +407,23 @@ function sendAsDOMToTarget( html: string, target: HTMLElement ): void {
         script.remove();
     }
 
+}
+
+
+function evaluateHistory( targets: string ) {
+    const historyResult = /[ ]*,?[ ]*\$history/i.exec( targets );
+    let addToHistoryBeforeElements = false;
+    let addToHistoryAfterElements = false;
+    if ( historyResult ) {
+        const lcTargets = targets.toLowerCase();
+        // Remove from targets
+        targets = targets.replace( historyResult[ 0 ], '' );
+        // Evaluate when to add to history
+        const history = '$history';
+        addToHistoryBeforeElements = lcTargets.startsWith( history );
+        if ( ! addToHistoryBeforeElements ) {
+            addToHistoryAfterElements = lcTargets.endsWith( history );
+        }
+    }
+    return { addToHistoryBeforeElements, addToHistoryAfterElements, targets };
 }
