@@ -52,7 +52,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <input
-                send-what="value"
+                send-prop="value"
                 send-on="change"
                 send-to="div"
             />
@@ -79,7 +79,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <input
-                send-what="value"
+                send-prop="value"
                 send-on="change"
                 send-to="div"
             />
@@ -114,7 +114,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <input
-                send-what="value"
+                send-prop="value"
                 send-on="change"
                 send-to="div,span"
             />
@@ -152,7 +152,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <div
-                send-what="text"
+                send-prop="text"
                 send-on="click"
                 send-to="#foo"
             >${content}</div>
@@ -179,7 +179,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <div
-                send-what="html"
+                send-prop="html"
                 send-on="click"
                 send-to="#foo"
             >${content}</div>
@@ -206,7 +206,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <div
-                send-what="data-id"
+                send-prop="data-id"
                 send-on="click"
                 send-to="#foo"
                 data-id="${value}"
@@ -235,7 +235,7 @@ describe( 'register', () => {
 
         document.body.innerHTML = `
             <div
-                send-what="data-id"
+                send-prop="data-id"
                 send-on="click"
                 send-to="#foo"
                 data-id="${value}"
@@ -264,7 +264,7 @@ describe( 'register', () => {
 
             document.body.innerHTML = `
                 <div
-                    send-what="data-id"
+                    send-prop="data-id"
                     send-on="click"
                     send-to="#foo"
                     data-id="{ value: 10 }"
@@ -294,7 +294,7 @@ describe( 'register', () => {
 
             document.body.innerHTML = `
                 <div
-                    send-what="data-id"
+                    send-prop="data-id"
                     send-on="click"
                     send-to="#foo"
                     data-id="{ 'value': 10 }"
@@ -326,7 +326,7 @@ describe( 'register', () => {
         document.body.innerHTML = `
             <div
                 data-url=""
-                send-what="data-url"
+                send-prop="data-url"
                 send-on="click"
                 send-to="$history"
             >Foo</div>
@@ -357,7 +357,7 @@ describe( 'register', () => {
             <a
                 href="/foo"
                 prevent
-                send-what="href"
+                send-prop="href"
                 send-on="click"
                 send-to="div"
             >Foo</a>
@@ -385,7 +385,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://google.com"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                 >Foo</div>
@@ -421,7 +421,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://google.com"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                     send-as="fetch-html"
@@ -457,7 +457,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://jsonplaceholder.typicode.com/todos/1"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                     send-as="fetch-json"
@@ -501,7 +501,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://jsonplaceholder.typicode.com/todos/1"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                     send-as="text"
@@ -545,7 +545,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://wikipedia.org"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                     send-as="fetch-text"
@@ -582,7 +582,7 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <div
                     data-url="https://wikipedia.org"
-                    send-what="data-url"
+                    send-prop="data-url"
                     send-on="click"
                     send-to="#x"
                     send-as="text"
@@ -773,7 +773,7 @@ describe( 'register', () => {
         } );
 
 
-        it( 'must not allow to use both "send-what" and "send-element"', () => {
+        it( 'must not allow to use both "send-prop" and "send-element"', () => {
 
             document.body.innerHTML = `
                 <p>Hello</p>
@@ -781,7 +781,7 @@ describe( 'register', () => {
                 <div
                     foo="bar"
                     send-element="p"
-                    send-what="foo"
+                    send-prop="foo"
                     send-on="click"
                     send-to="#x"
                     send-as="html"

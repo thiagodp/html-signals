@@ -1,24 +1,21 @@
 TO-DO:
 
-- send-what with multiple properties, in order
+- send-prop with multiple properties, in order
+- send-to with multiple targets, in order
 - send-on with multiple events, in order
+
 - on-receive with async function
 
 - send-on="receive"
-- form - offer support to send-what="$form" (or other way), send-on="submit", and send-as="json"
+
+- form - offer support to send-as="json"
 
 - on-mutate ?
 
-- on-receive="( id ) => $http.delete( `https://foo.com/bar/${id}`, { headers: { "Additional-Header-Here": "foo" } } )"
-- on-receive="( json ) => $http.postJSON( 'https://foo.com/bar', json, { headers: { "Additional-Header-Here": "foo" } } )"
-- on-receive="( json ) => $http.putJSON( `https://foo.com/bar/${json.id}`, json, { headers: { "Additional-Header-Here": "foo" } } )"
+- http-post-json
+- http-put-json
+- http-patch-json
+- http-delete
 
-- send-as="dom"
-  example:
-    Instead of
-      on-receive="( html ) => { const d = document.createDocumentFragment(); d.innerHTML = html; d.firstChild.hidden = false; return d.innerHTML; }"
-    use
-      send-as="dom"
-    and then
-      on-receive="( el ) => { el.hidden = false; return el; }
-
+- headers
+  - e.g.: headers="{ 'X-Foo': 'Bar' }"

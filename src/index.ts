@@ -17,7 +17,7 @@ export type Options = {
 
 
 export type SenderProperties = {
-    sendWhat?: string,
+    sendProp?: string,
     sendElement?: string,
     sendAs?: string,
     sendOn?: string,
@@ -60,7 +60,7 @@ export function register( root?: HTMLElement, options?: Options ): void {
     const elements = root.querySelectorAll( '[send-to]' );
     for ( let el of elements ) {
 
-        const sendWhat = el.getAttribute( 'send-what' ) || undefined;
+        const sendProp = el.getAttribute( 'send-prop' ) || undefined;
         const sendElement = el.getAttribute( 'send-element' ) || undefined;
         let sendOn = el.getAttribute( 'send-on' );
         const sendTo = el.getAttribute( 'send-to' );
@@ -68,11 +68,11 @@ export function register( root?: HTMLElement, options?: Options ): void {
 
         const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
 
-        if ( sendWhat && sendElement ) {
-            throw new Error( 'Element "' + el.tagName + '" must not declare both "send-what" and "send-element".' );
+        if ( sendProp && sendElement ) {
+            throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
         }
 
-        if ( ! sendOn || ! sendTo || ( ! sendWhat && ! sendElement ) ) {
+        if ( ! sendOn || ! sendTo || ( ! sendProp && ! sendElement ) ) {
             continue;
         }
 
@@ -87,13 +87,13 @@ export function register( root?: HTMLElement, options?: Options ): void {
             }
 
             el.addEventListener( sendOn, makeEventToReceiveProperty( root,
-                { sendWhat, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
+                { sendProp, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
         }
     }
 }
 
 
-function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, sendOn, sendTo, prevent }: SenderProperties, options?: Options ) {
+function makeEventToReceiveProperty( root, { sendProp, sendElement, sendAs, sendOn, sendTo, prevent }: SenderProperties, options?: Options ) {
 
     return event => {
 
@@ -141,17 +141,17 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
             }
         }
 
-        // send-what
-        sendWhat = sendWhat ? sendWhat.trim().toLowerCase() : '';
-        sendWhat = allowedPropMap[ sendWhat ] || sendWhat; // Allow unmapped properties
+        // send-prop
+        sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
+        sendProp = allowedPropMap[ sendProp ] || sendProp; // Allow unmapped properties
 
         // Get content
-        let content = sender[ sendWhat! ];
+        let content = sender[ sendProp! ];
         if ( content === undefined ) {
-            if ( sendWhat === 'innerText' || sendWhat === 'text' ) {
+            if ( sendProp === 'innerText' || sendProp === 'text' ) {
                 content = sender[ 'textContent' ];
-            } else if ( sendWhat!.indexOf( 'data-' ) === 0 ) { // "data-" attributes
-                content = sender.getAttribute( sendWhat );
+            } else if ( sendProp!.indexOf( 'data-' ) === 0 ) { // "data-" attributes
+                content = sender.getAttribute( sendProp );
             }
         }
         if ( content === undefined ) {
@@ -161,8 +161,8 @@ function makeEventToReceiveProperty( root, { sendWhat, sendElement, sendAs, send
         }
 
 
-        const onSendErrorProp = sender.getAttribute( 'on-send-error' ) || undefined;
-        const onSendErrorFn: Function | undefined = makeFunction( onSendErrorProp );
+        const onSendError = sender.getAttribute( 'on-send-error' ) || undefined;
+        const onSendErrorFn: Function | undefined = makeFunction( onSendError );
 
         // fetch-*
         if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
@@ -259,18 +259,18 @@ function handleHistoryAndTargets( root, allowedPropMap, content, targets, { befo
 
 function receive( target, content, allowedPropMap, options?: Options ) {
 
-    let receiveAsProp = target.getAttribute( 'receive-as' );
-    if ( ! receiveAsProp ) {
+    let receiveAs = target.getAttribute( 'receive-as' );
+    if ( ! receiveAs ) {
         return; // Nothing to do
     }
-    receiveAsProp = receiveAsProp.trim().toLowerCase();
-    receiveAsProp = allowedPropMap[ receiveAsProp ] || receiveAsProp; // Allow unmapped properties
+    receiveAs = receiveAs.trim().toLowerCase();
+    receiveAs = allowedPropMap[ receiveAs ] || receiveAs; // Allow unmapped properties
 
-    const onReceiveErrorProp = target.getAttribute( 'on-receive-error' ) || undefined;
-    const onReceiveErrorFn: Function | undefined = makeFunction( onReceiveErrorProp );
+    const onReceiveError = target.getAttribute( 'on-receive-error' ) || undefined;
+    const onReceiveErrorFn: Function | undefined = makeFunction( onReceiveError );
 
-    const onReceiveProp = target.getAttribute( 'on-receive' ) || undefined;
-    const onReceiveFn: Function | undefined = makeFunction( onReceiveProp );
+    const onReceive = target.getAttribute( 'on-receive' ) || undefined;
+    const onReceiveFn: Function | undefined = makeFunction( onReceive );
     if ( onReceiveFn ) {
         try {
             // console.log( 'WILL RUN on-receive', '\n\tbefore:', content );
@@ -280,20 +280,20 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             if ( onReceiveErrorFn ) {
                 onReceiveErrorFn( error, target );
             } else {
-                target[ receiveAsProp ] = error.message;
+                target[ receiveAs ] = error.message;
             }
             // console.error( error );
             return; // stop on error
         }
     }
 
-    if ( receiveAsProp === 'element' || receiveAsProp === 'element-clone' ) {
+    if ( receiveAs === 'element' || receiveAs === 'element-clone' ) {
 
         if ( typeof content !== 'object' ) {
             throw new Error( 'content to be cloned is not an object' );
         }
 
-        if ( receiveAsProp === 'element-clone' ) {
+        if ( receiveAs === 'element-clone' ) {
             if ( content.tagName === 'TEMPLATE' ) {
                 content = content.content;
             }
@@ -305,10 +305,10 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     }
 
     // fetch-*
-    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( receiveAsProp ) && options?.fetch ) {
+    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( receiveAs ) && options?.fetch ) {
 
-        const isJSON = receiveAsProp === 'fetch-json';
-        const isHTML = receiveAsProp === 'fetch-html';
+        const isJSON = receiveAs === 'fetch-json';
+        const isHTML = receiveAs === 'fetch-html';
         const prop = isHTML ? 'innerHTML' : 'innerText';
 
         addAnyPolyfillToAbortSignalIfNeeded( options.window );
@@ -322,7 +322,7 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             } )
             .then( data => {
 
-                if ( receiveAsProp === 'fetch-html-js' ) {
+                if ( receiveAs === 'fetch-html-js' ) {
                     sendAsDOMToTarget( data, target );
                     return;
                 }
@@ -363,12 +363,12 @@ function receive( target, content, allowedPropMap, options?: Options ) {
         // return;
     }
 
-    if ( receiveAsProp === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
-        target[ receiveAsProp ] = options.sanitizer( content );
+    if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
+        target[ receiveAs ] = options.sanitizer( content );
         return;
     }
 
-    target[ receiveAsProp ] = content.toString();
+    target[ receiveAs ] = content.toString();
 }
 
 
