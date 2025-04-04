@@ -1,12 +1,19 @@
 TO-DO:
 
-- send-prop with multiple properties, in order
+- send-prop with multiple properties, in order. -> sendAs is repeated for every property if not declared ?
 - send-to with multiple targets, in order
 - send-on with multiple events, in order
 
 - on-receive with async function
 
 - send-on="receive"
+    Example:
+      <div send-on="click" send-to="#two" send-as="text" >Hello</div>
+      <div id="two" on-receive="(s) => s + ' world'" send-on="receive" send-to="#three" send-as="text" ></div>
+      <div id="three" ></div>
+      Both divs #two and #tree should show "Hello world"
+    -> Add a function to execute after "on-receive" is executed ?
+    -> Add a function to execute when the sender is activated? -> Better using the event on the sender to check if the target
 
 - send property that encapsulates all send-xxx?
   send="data-href|click|main|text"

@@ -59,163 +59,188 @@ export function register( root?: HTMLElement, options?: Options ): void {
 
     const elements = root.querySelectorAll( '[send-to]' );
     for ( let el of elements ) {
-
-        const sendProp = el.getAttribute( 'send-prop' ) || undefined;
-        const sendElement = el.getAttribute( 'send-element' ) || undefined;
-        let sendOn = el.getAttribute( 'send-on' );
-        const sendTo = el.getAttribute( 'send-to' );
-        const sendAs = el.getAttribute( 'send-as' ) || undefined;
-
-        const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
-
-        if ( sendProp && sendElement ) {
-            throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
-        }
-
-        if ( ! sendOn || ! sendTo || ( ! sendProp && ! sendElement ) ) {
-            continue;
-        }
-
-        // TODO: allow abort signal to unregister all events
-
-        sendOn = sendOn.trim().toLowerCase();
-        if ( sendOn === 'domcontentloaded' ) {
-            sendOn = 'DOMContentLoaded';
-            el = ( options.document || options.window.document ) as any;
-        }
-
-        el.addEventListener( sendOn, makeEventToReceiveProperty( root,
-            { sendProp, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
+        configureSender( root, el, signal, options );
     }
 }
 
 
-function makeEventToReceiveProperty( root, { sendProp, sendElement, sendAs, sendOn, sendTo, prevent }: SenderProperties, options?: Options ) {
+function collectSenderProperties( el: Element ): SenderProperties | null {
 
+    const sendProp = el.getAttribute( 'send-prop' ) || undefined;
+    const sendElement = el.getAttribute( 'send-element' ) || undefined;
+    const sendOn = el.getAttribute( 'send-on' ) || undefined;
+    const sendTo = el.getAttribute( 'send-to' ) || undefined;
+    const sendAs = el.getAttribute( 'send-as' ) || undefined;
+
+    const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
+
+    if ( sendProp && sendElement ) {
+        throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
+    }
+
+    if ( ! sendOn || ! sendTo || ( ! sendProp && ! sendElement ) ) {
+        return null;
+    }
+
+    return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
+}
+
+
+function configureSender( root, el: Element, signal, options: Options ) {
+
+    const senderProps = collectSenderProperties( el );
+    if ( ! senderProps ) {
+        return;
+    }
+
+    let sendOn  = senderProps.sendOn?.trim().toLowerCase();
+    if ( ! sendOn || sendOn === 'receive' ) { // Not a valid DOM event
+        return;
+    }
+
+    if ( sendOn === 'domcontentloaded' ) {
+        sendOn = 'DOMContentLoaded';
+        el = ( options.document || options.window?.document ) as any;
+        if ( ! el ) {
+            throw new Error( 'Please define \'document\' or \'window\' in the options object' );
+        }
+    }
+
+    senderProps.sendOn = sendOn; // Just to sync values
+
+    el.addEventListener( sendOn, makeEventThatMakesTargetsToReceiveTheProperty( root, senderProps, options ), { signal } );
+}
+
+
+function makeEventThatMakesTargetsToReceiveTheProperty( root, { sendProp, sendElement, sendAs, sendOn, sendTo, prevent }: SenderProperties, options?: Options ) {
     return event => {
-
         if ( prevent ) {
             event.preventDefault();
             event.stopPropagation();
         }
-
         const sender = event.target;
-        const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
+        configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }, options );
+    };
+}
 
-        if ( sendElement ) {
 
-            let element = root.querySelector( sendElement );
+function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }: SenderProperties, options?: Options ) {
 
-            const targetElements = sendTo ? root.querySelectorAll( sendTo ) : [];
-            for ( const target of targetElements ) {
+    const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
 
-                if ( sendAs === 'element-clone' )  {
-                    if ( element.tagName === 'TEMPLATE' ) {
-                        element = element.content;
+    if ( sendElement ) {
+
+        let element = root.querySelector( sendElement );
+
+        const targetElements = sendTo ? root.querySelectorAll( sendTo ) : [];
+        for ( const target of targetElements ) {
+
+            if ( sendAs === 'element-clone' )  {
+                if ( element.tagName === 'TEMPLATE' ) {
+                    element = element.content;
+                }
+                element = element.cloneNode( true );
+            }
+
+            receive( root, target, element, allowedPropMap, options );
+        }
+
+        return;
+    }
+
+    const { addToHistoryBeforeElements, addToHistoryAfterElements, targets } = evaluateHistory( sendTo );
+    sendTo = targets; // sendTo without $history
+
+    // send-prop
+    sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
+    sendProp = allowedPropMap[ sendProp ] || sendProp; // Allow unmapped properties
+
+    // Get content
+    let content = sender[ sendProp! ];
+    if ( content === undefined ) {
+        if ( sendProp === 'innerText' || sendProp === 'text' ) {
+            content = sender[ 'textContent' ];
+        } else if ( sendProp!.indexOf( 'data-' ) === 0 ) { // "data-" attributes
+            content = sender.getAttribute( sendProp );
+        }
+    }
+    if ( content === undefined ) {
+        return;
+    } else if ( sendAs === 'json' ) {
+        content = parseUnquotedJSON( content );
+    }
+
+
+    const onSendError = sender.getAttribute( 'on-send-error' ) || undefined;
+    const onSendErrorFn: Function | undefined = makeFunction( onSendError );
+
+    // fetch-*
+    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
+
+        const isJSON = sendAs === 'fetch-json';
+        const isHTML = sendAs === 'fetch-html';
+        const prop = isHTML ? 'innerHTML' : 'innerText';
+
+        addAnyPolyfillToAbortSignalIfNeeded( options.window );
+
+        return options!.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
+            .then( response => {
+                if ( ! response.ok ) {
+                    throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
+                }
+                return isJSON ? response.json() : response.text();
+            } )
+            .then( data => {
+
+                if ( sendAs === 'fetch-html-js' ) {
+
+                    // History - before
+                    if ( addToHistoryBeforeElements && options?.window ) {
+                        options.window.history.pushState( null, '', content );
                     }
-                    element = element.cloneNode( true );
+
+                    // Add the DOM to the first element only - scripts executed once.
+                    const targetElement = sendTo ? root.querySelector( sendTo ) : undefined;
+                    if ( targetElement ) {
+                        sendAsDOMToTarget( data, targetElement );
+                    }
+
+                    // History - after
+                    if ( addToHistoryAfterElements && options?.window ) {
+                        options.window.history.pushState( null, '', content );
+                    }
+
+                    return;
                 }
 
-                receive( target, element, allowedPropMap, options );
-            }
+                return handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+            } )
+            .catch( error => {
+                if ( onSendErrorFn ) {
+                    onSendErrorFn( error, sender );
+                } else {
+                    sender[ prop ] = error.message;
+                }
+            } );
 
-            return;
-        }
+        // try {
+        //     const response = await options?.fetch( content, { signal: AbortSignal.any( [ signal, AbortSignal.timeout( timeout ) ] ) } );
+        //     if ( ! response.ok ) {
+        //         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
+        //     }
+        //     const data = isJSON ? await response.json() : await response.text();
+        //     await handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+        // } catch ( error ) {
+        //     if ( errorFn ) {
+        //         errorFn( error, sender );
+        //     } else {
+        //         sender[ prop ] = error.message;
+        //     }
+        // }
 
-        const { addToHistoryBeforeElements, addToHistoryAfterElements, targets } = evaluateHistory( sendTo );
-        sendTo = targets; // sendTo without $history
-
-        // send-prop
-        sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
-        sendProp = allowedPropMap[ sendProp ] || sendProp; // Allow unmapped properties
-
-        // Get content
-        let content = sender[ sendProp! ];
-        if ( content === undefined ) {
-            if ( sendProp === 'innerText' || sendProp === 'text' ) {
-                content = sender[ 'textContent' ];
-            } else if ( sendProp!.indexOf( 'data-' ) === 0 ) { // "data-" attributes
-                content = sender.getAttribute( sendProp );
-            }
-        }
-        if ( content === undefined ) {
-            return;
-        } else if ( sendAs === 'json' ) {
-            content = parseUnquotedJSON( content );
-        }
-
-
-        const onSendError = sender.getAttribute( 'on-send-error' ) || undefined;
-        const onSendErrorFn: Function | undefined = makeFunction( onSendError );
-
-        // fetch-*
-        if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
-
-            const isJSON = sendAs === 'fetch-json';
-            const isHTML = sendAs === 'fetch-html';
-            const prop = isHTML ? 'innerHTML' : 'innerText';
-
-            addAnyPolyfillToAbortSignalIfNeeded( options.window );
-
-            return options!.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
-                .then( response => {
-                    if ( ! response.ok ) {
-                        throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
-                    }
-                    return isJSON ? response.json() : response.text();
-                } )
-                .then( data => {
-
-                    if ( sendAs === 'fetch-html-js' ) {
-
-                        // History - before
-                        if ( addToHistoryBeforeElements && options?.window ) {
-                            options.window.history.pushState( null, '', content );
-                        }
-
-                        // Add the DOM to the first element only - scripts executed once.
-                        const targetElement = sendTo ? root.querySelector( sendTo ) : undefined;
-                        if ( targetElement ) {
-                            sendAsDOMToTarget( data, targetElement );
-                        }
-
-                        // History - after
-                        if ( addToHistoryAfterElements && options?.window ) {
-                            options.window.history.pushState( null, '', content );
-                        }
-
-                        return;
-                    }
-
-                    return handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
-                } )
-                .catch( error => {
-                    if ( onSendErrorFn ) {
-                        onSendErrorFn( error, sender );
-                    } else {
-                        sender[ prop ] = error.message;
-                    }
-                } );
-
-            // try {
-            //     const response = await options?.fetch( content, { signal: AbortSignal.any( [ signal, AbortSignal.timeout( timeout ) ] ) } );
-            //     if ( ! response.ok ) {
-            //         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
-            //     }
-            //     const data = isJSON ? await response.json() : await response.text();
-            //     await handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
-            // } catch ( error ) {
-            //     if ( errorFn ) {
-            //         errorFn( error, sender );
-            //     } else {
-            //         sender[ prop ] = error.message;
-            //     }
-            // }
-
-        } else {
-            return handleHistoryAndTargets( root, allowedPropMap, content, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
-        }
-    };
+    } else {
+        return handleHistoryAndTargets( root, allowedPropMap, content, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+    }
 }
 
 
@@ -229,7 +254,7 @@ function handleHistoryAndTargets( root, allowedPropMap, content, targets, { befo
     // Select target elements and send the content
     const targetElements = targets ? root.querySelectorAll( targets ) : [];
     for ( const el of targetElements ) {
-        receive( el, content, allowedPropMap, options );
+        receive( root, el, content, allowedPropMap, options );
     }
 
     // History
@@ -239,21 +264,32 @@ function handleHistoryAndTargets( root, allowedPropMap, content, targets, { befo
 }
 
 
+function sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, options?: Options ) {
 
-
-function receive( target, content, allowedPropMap, options?: Options ) {
-
-    let receiveAs = target.getAttribute( 'receive-as' );
-    if ( ! receiveAs ) {
-        return; // Nothing to do
+    const sendOn = targetElement.getAttribute( 'send-on' )?.trim().toLowerCase();
+    if ( sendOn !== 'receive' ) {
+        return;
     }
-    receiveAs = receiveAs.trim().toLowerCase();
+
+    // The current target element will send to its targets
+    const senderProps = collectSenderProperties( targetElement );
+    if ( ! senderProps ) {
+        return;
+    }
+
+    return configureTargetsToReceive( targetElement, root, senderProps, options );
+}
+
+
+function receive( root, targetElement, content, allowedPropMap, options?: Options ) {
+
+    let receiveAs = targetElement.getAttribute( 'receive-as' )?.trim().toLowerCase() || 'text';
     receiveAs = allowedPropMap[ receiveAs ] || receiveAs; // Allow unmapped properties
 
-    const onReceiveError = target.getAttribute( 'on-receive-error' ) || undefined;
+    const onReceiveError = targetElement.getAttribute( 'on-receive-error' ) || undefined;
     const onReceiveErrorFn: Function | undefined = makeFunction( onReceiveError );
 
-    const onReceive = target.getAttribute( 'on-receive' ) || undefined;
+    const onReceive = targetElement.getAttribute( 'on-receive' ) || undefined;
     const onReceiveFn: Function | undefined = makeFunction( onReceive );
     if ( onReceiveFn ) {
         try {
@@ -262,9 +298,9 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             // console.log( '\tafter:', content );
         } catch ( error ) {
             if ( onReceiveErrorFn ) {
-                onReceiveErrorFn( error, target );
+                onReceiveErrorFn( error, targetElement );
             } else {
-                target[ receiveAs ] = error.message;
+                targetElement[ receiveAs ] = error.message;
             }
             // console.error( error );
             return; // stop on error
@@ -284,11 +320,11 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             content = content.cloneNode( true );
         }
 
-        target.append( content );
+        targetElement.append( content );
         return;
     }
 
-    // fetch-*
+    // receiveAs with fetch-*
     if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( receiveAs ) && options?.fetch ) {
 
         const isJSON = receiveAs === 'fetch-json';
@@ -307,22 +343,22 @@ function receive( target, content, allowedPropMap, options?: Options ) {
             .then( data => {
 
                 if ( receiveAs === 'fetch-html-js' ) {
-                    sendAsDOMToTarget( data, target );
+                    sendAsDOMToTarget( data, targetElement );
                     return;
                 }
 
                 if ( typeof options?.sanitizer === 'function' ) {
-                    target[ prop ] = options.sanitizer( data );
+                    targetElement[ prop ] = options.sanitizer( data );
                 } else {
-                    target[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
+                    targetElement[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
                 }
 
             } )
             .catch( error => {
                 if ( onReceiveErrorFn ) {
-                    onReceiveErrorFn( error, target );
+                    onReceiveErrorFn( error, targetElement );
                 } else {
-                    target[ prop ] = error.message;
+                    targetElement[ prop ] = error.message;
                 }
             } );
 
@@ -348,11 +384,11 @@ function receive( target, content, allowedPropMap, options?: Options ) {
     }
 
     if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
-        target[ receiveAs ] = options.sanitizer( content );
+        targetElement[ receiveAs ] = options.sanitizer( content );
         return;
     }
 
-    target[ receiveAs ] = content.toString();
+    targetElement[ receiveAs ] = content.toString();
 }
 
 
