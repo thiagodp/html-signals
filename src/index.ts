@@ -79,16 +79,13 @@ export function register( root?: HTMLElement, options?: Options ): void {
         // TODO: allow abort signal to unregister all events
 
         sendOn = sendOn.trim().toLowerCase();
-        if ( sendOn === 'change' || sendOn === 'click' || sendOn === 'domcontentloaded' || sendOn === 'blur' || sendOn === 'focus' ) {
-
-            if ( sendOn === 'domcontentloaded' ) {
-                sendOn = 'DOMContentLoaded';
-                el = ( options.document || options.window.document ) as any;
-            }
-
-            el.addEventListener( sendOn, makeEventToReceiveProperty( root,
-                { sendProp, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
+        if ( sendOn === 'domcontentloaded' ) {
+            sendOn = 'DOMContentLoaded';
+            el = ( options.document || options.window.document ) as any;
         }
+
+        el.addEventListener( sendOn, makeEventToReceiveProperty( root,
+            { sendProp, sendElement, sendTo, sendAs, prevent }, options ), { signal } );
     }
 }
 
@@ -103,7 +100,7 @@ function makeEventToReceiveProperty( root, { sendProp, sendElement, sendAs, send
         }
 
         const sender = event.target;
-        const allowedPropMap = { 'value': 'value', 'text': 'innerText', 'html': 'innerHTML' };
+        const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
 
         if ( sendElement ) {
 
