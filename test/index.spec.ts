@@ -1004,6 +1004,43 @@ describe( 'register', () => {
         } );
 
 
+        it( 'process all the "on-receive" events in the chain', () => {
+
+            document.body.innerHTML = `
+                <div
+                    send-prop="text"
+                    send-on="click"
+                    send-to="#x"
+                >Foo</div>
+
+                <div id="x"
+                    receive-as="text"
+                    on-receive="s => s + '!'"
+                    send-prop="text"
+                    send-on="receive"
+                    send-to="#y"
+                ></div>
+
+                <div id="y"
+                    receive-as="text"
+                    on-receive="s => s + '?'"
+                ></div>
+            `;
+
+            register( document.body, { document, window } );
+
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
+
+            const target1 = document.querySelector( '#x' );
+            expect( target1.innerText ).toContain( 'Foo!' );
+
+            const target2 = document.querySelector( '#y' );
+            expect( target2.innerText ).toContain( 'Foo!?' );
+        } );
+
+
         it.skip( 'throws an exception when either "send-prop" or "send-element" is not defined', async () => {
 
             const run = async () => {
