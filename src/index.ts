@@ -60,7 +60,7 @@ export function register( root?: HTMLElement, options?: Options ): void {
     unregister();
     const { signal } = createAbortController( options.window );
 
-    const elements = root.querySelectorAll( '[send-to]' );
+    const elements = new Set( root.querySelectorAll( '[send-to],[send]' ) );
     for ( let el of elements ) {
         configureSender( root, el, signal, options );
     }
@@ -69,23 +69,42 @@ export function register( root?: HTMLElement, options?: Options ): void {
 
 function collectSenderProperties( el: Element ): SenderProperties | null {
 
+    const checkedProperties = ( { sendProp, sendElement, sendOn, sendTo, sendAs, prevent } ) => {
+
+        if ( sendProp && sendElement ) {
+            throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
+        }
+
+        if ( ! sendOn || ! sendTo || ( ! sendProp && ! sendElement ) ) {
+            return null;
+        }
+
+        return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
+    }
+
+    const extractElement = text => {
+        const result = /^\{([^}])\}$/.exec( text ); // Example: {#foo}
+        return result ? result.at( 1 ) : undefined;
+    };
+
+
+    const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
+
+    const send = el.getAttribute( 'send' ) || undefined;
+    if ( send ) {
+        const [ sendProp, sendOn, sendTo, sendAs ] = send.split( '|' ).map( value => value.trim() || undefined );
+        const sendElement = extractElement( sendProp );
+
+        return checkedProperties( { sendProp: ( sendElement ? undefined : sendProp ), sendElement, sendOn, sendTo, sendAs, prevent } );
+    }
+
     const sendProp = el.getAttribute( 'send-prop' ) || undefined;
     const sendElement = el.getAttribute( 'send-element' ) || undefined;
     const sendOn = el.getAttribute( 'send-on' ) || undefined;
     const sendTo = el.getAttribute( 'send-to' ) || undefined;
     const sendAs = el.getAttribute( 'send-as' ) || undefined;
 
-    const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
-
-    if ( sendProp && sendElement ) {
-        throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
-    }
-
-    if ( ! sendOn || ! sendTo || ( ! sendProp && ! sendElement ) ) {
-        return null;
-    }
-
-    return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
+    return checkedProperties( { sendProp, sendElement, sendOn, sendTo, sendAs, prevent } );
 }
 
 

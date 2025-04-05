@@ -1075,4 +1075,58 @@ describe( 'register', () => {
 
     } );
 
+
+    describe( 'send', () => {
+
+        it( 'can send the input value to another element\'s text when the input changes', () => {
+
+            document.body.innerHTML = `
+                <input
+                    send="value|change|div"
+                />
+
+                <div
+                  receive-as="text"
+                ></div>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'input' );
+            source.value = 'Hello';
+
+            const event = new window.Event( 'change', {} );
+            source.dispatchEvent( event );
+
+            const target = document.querySelector( 'div' );
+            expect( target.innerText ).toBe( 'Hello' );
+        } );
+
+
+        it( 'can send an element', () => {
+
+            const element = '<p>Hello</p>';
+
+            document.body.innerHTML = `
+                ${element}
+
+                <div
+                    send="{p}|click|#x"
+                >Foo</div>
+
+                <div id="x" receive-as="element" ></div>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
+
+            const target = document.querySelector( '#x' );
+            expect( target.innerHTML ).toContain( element );
+        } );
+
+    } );
+
 } );

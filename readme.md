@@ -37,6 +37,16 @@
   - "fetch-text"
   - "element"
   - "element-clone"
+- `send-on` with a single event:
+  - "change"
+  - "click"
+  - "blur
+  - "focus"
+  - "domcontentloaded"
+  - "receive" -> forward value to other element(s)
+- `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to` and `send-as`.
+  - Example 1: `<input send="value|change|div" /> <div receive-as="text" ></div>` will send the input value to the div when it changes.
+  - Example 2: `<div send="{p}|click|#bar" >Click Me</div> <p>Hello</p> <span id="bar" receive-as="element" ></span>` will send the paragraph to the span when the div is clicked.
 - `receive-as` with:
   - "text"
   - "html"
@@ -47,13 +57,6 @@
   - "fetch-text"
   - "element"
   - "element-clone"
-- `send-on` with single event:
-  - "change"
-  - "click"
-  - "blur
-  - "focus"
-  - "domcontentloaded"
-  - "receive" -> forward value to other element(s)
 - `on-receive` with sync function
 - `on-receive-error` with function
 - `on-send-error` with function
