@@ -36,6 +36,9 @@ export type ReceiverProperties = {
 let timeout: number = 5000;
 
 
+const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
+
+
 
 export function unregister(): void {
     destroyAbortController();
@@ -126,8 +129,6 @@ function makeEventThatMakesTargetsToReceiveTheProperty( root, { sendProp, sendEl
 
 function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }: SenderProperties, options?: Options ) {
 
-    const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
-
     if ( sendElement ) {
 
         let element = root.querySelector( sendElement );
@@ -142,7 +143,7 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
                 element = element.cloneNode( true );
             }
 
-            receive( root, target, element, allowedPropMap, options );
+            receive( root, target, element, options );
         }
 
         return;
@@ -158,9 +159,11 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
     // Get content
     let content = sender[ sendProp! ];
     if ( content === undefined ) {
+        // Use 'textContent' if 'innerText' is not available
         if ( sendProp === 'innerText' || sendProp === 'text' ) {
             content = sender[ 'textContent' ];
-        } else if ( sendProp!.indexOf( 'data-' ) === 0 ) { // "data-" attributes
+        // Use "data-" attributes
+        } else if ( sendProp!.indexOf( 'data-' ) === 0 ) {
             content = sender.getAttribute( sendProp );
         }
     }
@@ -213,7 +216,7 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
                     return;
                 }
 
-                return handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+                return handleHistoryAndTargets( root, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
             } )
             .catch( error => {
                 if ( onSendErrorFn ) {
@@ -229,7 +232,7 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         //         throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
         //     }
         //     const data = isJSON ? await response.json() : await response.text();
-        //     await handleHistoryAndTargets( root, allowedPropMap, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+        //     await handleHistoryAndTargets( root, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
         // } catch ( error ) {
         //     if ( errorFn ) {
         //         errorFn( error, sender );
@@ -239,12 +242,12 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         // }
 
     } else {
-        return handleHistoryAndTargets( root, allowedPropMap, content, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+        return handleHistoryAndTargets( root, content, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
     }
 }
 
 
-function handleHistoryAndTargets( root, allowedPropMap, content, targets, { before, after }, options?: Options ) {
+function handleHistoryAndTargets( root, content, targets, { before, after }, options?: Options ) {
 
     // History
     if ( before && options?.window ) {
@@ -254,7 +257,7 @@ function handleHistoryAndTargets( root, allowedPropMap, content, targets, { befo
     // Select target elements and send the content
     const targetElements = targets ? root.querySelectorAll( targets ) : [];
     for ( const el of targetElements ) {
-        receive( root, el, content, allowedPropMap, options );
+        receive( root, el, content, options );
     }
 
     // History
@@ -264,24 +267,30 @@ function handleHistoryAndTargets( root, allowedPropMap, content, targets, { befo
 }
 
 
-function sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, options?: Options ) {
+function sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, content, options?: Options ) {
 
     const sendOn = targetElement.getAttribute( 'send-on' )?.trim().toLowerCase();
     if ( sendOn !== 'receive' ) {
         return;
     }
+    // console.log( targetElement, targetElement.id );
 
     // The current target element will send to its targets
     const senderProps = collectSenderProperties( targetElement );
     if ( ! senderProps ) {
-        return;
+        throw new Error( 'Element with "send-on" equals to "receive" must set "send-prop" or "send-element".' );
     }
 
-    return configureTargetsToReceive( targetElement, root, senderProps, options );
+    // Select target elements and send the content
+    const targets = senderProps.sendTo;
+    const targetElements = targets ? root.querySelectorAll( targets ) : [];
+    for ( const el of targetElements ) {
+        return receive( root, el, content, options );
+    }
 }
 
 
-function receive( root, targetElement, content, allowedPropMap, options?: Options ) {
+function receive( root, targetElement, content, options?: Options ) {
 
     let receiveAs = targetElement.getAttribute( 'receive-as' )?.trim().toLowerCase() || 'text';
     receiveAs = allowedPropMap[ receiveAs ] || receiveAs; // Allow unmapped properties
@@ -321,7 +330,8 @@ function receive( root, targetElement, content, allowedPropMap, options?: Option
         }
 
         targetElement.append( content );
-        return;
+
+        return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, content, options );
     }
 
     // receiveAs with fetch-*
@@ -353,6 +363,7 @@ function receive( root, targetElement, content, allowedPropMap, options?: Option
                     targetElement[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
                 }
 
+                return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, targetElement[ prop ] , options );
             } )
             .catch( error => {
                 if ( onReceiveErrorFn ) {
@@ -385,10 +396,11 @@ function receive( root, targetElement, content, allowedPropMap, options?: Option
 
     if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
         targetElement[ receiveAs ] = options.sanitizer( content );
-        return;
+    } else {
+        targetElement[ receiveAs ] = content.toString();
     }
 
-    targetElement[ receiveAs ] = content.toString();
+    return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, targetElement[ receiveAs ], options );
 }
 
 

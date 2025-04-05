@@ -53,6 +53,7 @@
   - "blur
   - "focus"
   - "domcontentloaded"
+  - "receive" -> forward value to other element(s)
 - `on-receive` with sync function
 - `on-receive-error` with function
 - `on-send-error` with function
