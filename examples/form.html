@@ -9,7 +9,7 @@
 <body>
     <p>See the Network tab in Developer Tools (F12)</p>
 
-    <form action="/foo" method="PUT"
+    <form action="/foo" method="PUT" headers="X-Foo:Hello|X-Bar:World"
         on-send-error="( error, form, response ) => msg.innerText = 'Ops... ' + error.message;"
         >
         <input type="hidden" name="id" value="10" />
@@ -27,7 +27,7 @@
         <button type="submit">Patch</button>
     </form>
 
-    <form action="/foo" method="DELETE"
+    <form action="/foo" method="DELETE" headers="X-Foo:Hello|X-Bar:World"
         on-send-error="( error, form, response ) => msg.innerText = 'Ops... ' + error.message;"
         >
         <input type="hidden" name="id" value="10" />

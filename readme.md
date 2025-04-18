@@ -2,7 +2,7 @@
 
 > HTML properties to reduce the need of writing JavaScript code
 
-👉 **Work-In-Progress! API is not stable yet and things may change.**
+👉 **Work-In-Progress!**
 
 📝 **Documentation to be improved** - see [tests](/test/index.spec.ts) or [examples](/examples/) for now.
 
@@ -34,77 +34,89 @@ export function unregister(): void;
 ### Properties for HTML elements
 
 1. A **form** element can also use `method` with `PUT`, `PATCH` and `DELETE`.
-  - There must be an input element named `id` that can be hidden;
-  - The value of the element named `id` will be dynamically added to the URL in `action`
-    - Example that will send a HTTP `DELETE` to `/foo/10`:
-    ```html
-    <form method="DELETE" action="/foo" >
-      <input type="hidden" name="id" value="10" />
-      <button type="submit" >Delete</button>
-    </form>
-    ```
-  - When `PUT` or `PATCH` are used, `send-as` can be used with:
-    - `"form"`, that is the _default_ value, will send as `application/x-www-form-urlencoded`;
-    - `"json"` will send as `application/json`;
-    - `"multipart"` will send as `multipart/form-data`.
+    - There must be an input element named `id` that can be hidden;
+    - The value of the element named `id` will be dynamically added to the URL in `action`
+      - Example that will send a HTTP `DELETE` to `/foo/10`:
+      ```html
+      <form method="DELETE" action="/foo" >
+        <input type="hidden" name="id" value="10" />
+        <button type="submit" >Delete</button>
+      </form>
+      ```
+    - When `POST`, `PUT` or `PATCH` are used, `send-as` can be used with:
+      - `"form"`, that is the _default_ value, will send as `application/x-www-form-urlencoded`;
+      - `"json"` will send as `application/json`;
+      - `"multipart"` will send as `multipart/form-data`.
 
-2. Any **HTML element** can possibly use the following properties to augment their behavior:
 
-- `send-prop` with a single property (changed from `send-what` after version `0.8.0`)
+2. A **form** can use the property `headers` with additional HTTP headers separated by pipe (`|`).
+    - Example that will send a `PUT` to `/foo/10` with the additional headers `"X-Foo"` with `"Hello"` and `"X-Bar"` with `"World"`:
+      ```html
+      <form method="PUT" action="/foo" headers="X-Foo:Hello|X-Bar:World" >
+        <input type="hidden" name="id" value="10" />
+        <button type="submit" >Delete</button>
+      </form>
+      ```
+    - Additional headers can subscribe default headers, if desired. Example: `headers="Content-Type: text/plain"`.
 
-- `send-element` with a single element
 
-- `send-to` with query selector
+3. Any **HTML element** can possibly use the following properties to augment their behavior:
 
-- `send-as` with:
-  - "text"
-  - "html"
-  - "number"
-  - "int"
-  - "float"
-  - "json" - values must contain unquoted or single-quoted properties only (HTML limitation)
-  - "fetch-html" (html, css)
-  - "fetch-html-js" (html, css, javascript)
-  - "fetch-json"
-  - "fetch-text"
-  - "element"
-  - "element-clone"
+    - `send-prop` with a single property (changed from `send-what` after version `0.8.0`)
 
-- `send-on` with a single event:
-  - "change"
-  - "click"
-  - "blur
-  - "focus"
-  - "domcontentloaded"
-  - "receive" -> forward value to other element(s)
+    - `send-element` with a single element
 
-- `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to` and `send-as`.
-  - Example 1: `<input send="value|change|div" /> <div receive-as="text" ></div>` will send the input value to the div when it changes.
-  - Example 2: `<div send="{p}|click|#bar" >Click Me</div> <p>Hello</p> <span id="bar" receive-as="element" ></span>` will send the paragraph to the span when the div is clicked.
+    - `send-to` with query selector
 
-- `receive-as` with:
-  - "text"
-  - "html"
-  - "number"
-  - "int"
-  - "float"
-  - "json"
-  - "fetch-html" (html, css)
-  - "fetch-html-js" (html, css, javascript)
-  - "fetch-json"
-  - "fetch-text"
-  - "element"
-  - "element-clone"
+    - `send-as` with:
+      - "text"
+      - "html"
+      - "number"
+      - "int"
+      - "float"
+      - "json" - values must contain unquoted or single-quoted properties only (HTML limitation)
+      - "fetch-html" (html, css)
+      - "fetch-html-js" (html, css, javascript)
+      - "fetch-json"
+      - "fetch-text"
+      - "element"
+      - "element-clone"
 
-- `on-receive` with sync function
+    - `send-on` with a single event:
+      - "change"
+      - "click"
+      - "blur
+      - "focus"
+      - "domcontentloaded"
+      - "receive" -> forward value to other element(s)
 
-- `on-receive-error` with function
+    - `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to` and `send-as`.
+      - Example 1: `<input send="value|change|div" /> <div receive-as="text" ></div>` will send the input value to the div when it changes.
+      - Example 2: `<div send="{p}|click|#bar" >Click Me</div> <p>Hello</p> <span id="bar" receive-as="element" ></span>` will send the paragraph to the span when the div is clicked.
 
-- `on-send-error` with function
+    - `receive-as` with:
+      - "text"
+      - "html"
+      - "number"
+      - "int"
+      - "float"
+      - "json"
+      - "fetch-html" (html, css)
+      - "fetch-html-js" (html, css, javascript)
+      - "fetch-json"
+      - "fetch-text"
+      - "element"
+      - "element-clone"
 
-- `$history` as a special target for "send-to", that adds a URL to the browser history - e.g. send-to="div,$history"
+    - `on-receive` with sync function
 
-- `prevent` - to call preventDefault() on `<a>`, `<form>`, etc.
+    - `on-receive-error` with function
+
+    - `on-send-error` with function
+
+    - `$history` as a special target for "send-to", that adds a URL to the browser history - e.g. send-to="div,$history"
+
+    - `prevent` - to call preventDefault() on `<a>`, `<form>`, etc.
 
 
 #### Notes

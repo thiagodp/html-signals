@@ -70,24 +70,38 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
             url += url.endsWith( '/' ) ? id : '/' + id;
         }
 
+        // Headers
+
+        const httpHeaders = {};
+        if ( method != 'DELETE' ) {
+            httpHeaders[ 'Content-Type' ] = isJson ? 'application/json' : ( isMultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded' );
+        }
+
+        const userHeaders = extractHeaders( form.getAttribute( 'headers' ) ) || {};
+
+        addHeaders( userHeaders, httpHeaders );
+
         // Fetch
         // TODO: define option to retrieve content when the response is received
 
         const fetchOptions = {
             method,
             signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
+            headers: httpHeaders,
         };
 
         if ( method != 'DELETE' ) {
-            fetchOptions[ 'headers' ] = {
-                'Content-Type': isJson ? 'application/json' : ( isMultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded' )
-            };
-            // If FormData is passed directly, fetch will send the data as "multipart/form-data", so it's being converted to URLSearchParams
+
+            // If FormData is passed directly, fetch will send the data as "multipart/form-data",
+            // so it's being converted to URLSearchParams when send is not 'multipart'.
+
             fetchOptions[ 'body' ] = isJson
                 ? JSON.stringify( obj )
                 : ( isMultipart ? formData : ( new URLSearchParams( formData as unknown as Record<string, string> ) ).toString() );
-            console.log( fetchOptions );
+
         }
+
+        // console.log( fetchOptions );
 
         let outerResponse;
         return options!.fetch( url, fetchOptions )
@@ -109,4 +123,25 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
     };
 
     el.addEventListener( props.sendOn!, sendFormData );
+}
+
+
+function extractHeaders( text ): Record< string, string > | undefined {
+    if ( ! text ) {
+        return;
+    }
+    const headers = text.split( '|' );
+    const obj = {};
+    for ( const h of headers ) {
+        const [ key, value ] = h.split( ':' ).map( v => v.trim() );
+        obj[ key ] = value
+    }
+    return obj;
+}
+
+
+function addHeaders( from: Record< string, string >, to: Record< string, string > ) {
+    for ( const h in from ) {
+        to[ h ] = from[ h ];
+    }
 }
