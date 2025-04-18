@@ -16,7 +16,7 @@
     "url": "https://github.com/thiagodp/html-signals"
   },
   "files": [
-    "dist/index.*"
+    "dist/*"
   ],
   "type": "module",
   "source": "src/index.ts",

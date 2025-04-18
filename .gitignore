@@ -3,4 +3,5 @@ dist
 test-results
 .vscode
 test.html
+stats.html
 readme copy.md
