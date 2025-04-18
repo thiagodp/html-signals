@@ -5,9 +5,14 @@ TO-DO:
     -> send-to with more than one element receive all the properties, or the properties in order?
 - send-on with multiple events, in order
 
+👇 WIP
+- headers
+  - e.g.: headers="{ 'X-Foo': 'Bar' }"
+
 - on-receive with async function
 
-- send property that encapsulates all send-xxx?
+
+OK- send property that encapsulates all send-xxx?
   send="data-href|click|main|text"
 
     but what about send-element? Use {} to encapsulate the query selector?
@@ -15,7 +20,7 @@ TO-DO:
 
       send="props OR {element}|actions|targets|format"
 
-- form - offer support to send-as="json" method="..."
+OK- form - offer support to send-as="json" method="..."
 
   <form method="PUT action="..." send-as="json" > ?
 
@@ -26,5 +31,3 @@ TO-DO:
 - http-patch-json
 - http-delete
 
-- headers
-  - e.g.: headers="{ 'X-Foo': 'Bar' }"
