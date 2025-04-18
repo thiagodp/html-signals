@@ -1,6 +1,6 @@
 {
   "name": "html-signals",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "HTML properties to reduce the need of writing JavaScript code",
   "author": "Thiago Delgado Pinto",
   "keywords": [
