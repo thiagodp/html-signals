@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example</title>
+    <style>form { padding-bottom: 2rem; } </style>
+</head>
+<body>
+    <p>See the Network tab in Developer Tools (F12)</p>
+
+    <form action="/foo" method="PUT"
+        on-send-error="( error, form, response ) => msg.innerText = 'Ops... ' + error.message;"
+        >
+        <input type="hidden" name="id" value="10" />
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required />
+        <button type="submit">Put</button>
+    </form>
+
+    <form action="/foo" method="PATCH"
+        on-send-error="( error, form, response ) => msg.innerText = 'Ops... ' + error.message;"
+        >
+        <input type="hidden" name="id" value="10" />
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required />
+        <button type="submit">Patch</button>
+    </form>
+
+    <form action="/foo" method="DELETE"
+        on-send-error="( error, form, response ) => msg.innerText = 'Ops... ' + error.message;"
+        >
+        <input type="hidden" name="id" value="10" />
+        <button type="submit">Delete</button>
+    </form>
+
+    <div id="msg" ></div>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

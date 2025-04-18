@@ -1,4 +1,4 @@
-import { parseFunction } from "./parser";
+import { parseFunction } from "./parser.js";
 
 /**
  * Call a function declared as string and forward any exception to an error callback.

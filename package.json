@@ -34,13 +34,15 @@
     }
   },
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run --dir test",
+    "test:watch": "vitest --dir test",
     "build": "microbundle",
     "build:watch": "microbundle --watch",
     "build:release": "rimraf dist && microbundle --no-sourcemap"
   },
   "devDependencies": {
+    "@fetch-mock/vitest": "^0.2.13",
+    "@playwright/test": "^1.51.1",
     "@types/jsdom": "^21.1.7",
     "fetch-mock": "^12.5.2",
     "jsdom": "^26.0.0",

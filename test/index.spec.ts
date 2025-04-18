@@ -7,7 +7,11 @@ import fetch from 'node-fetch';
 // import createFetchMock from 'vitest-fetch-mock';
 // const fetch = createFetchMock(vi);
 
-import fetchMock from 'fetch-mock';
+// import fetchMock from 'fetch-mock';
+
+import fetchMock, { manageFetchMockGlobally } from '@fetch-mock/vitest';
+// manageFetchMockGlobally(); // optional
+
 
 const sleep = timeMS => new Promise( ( resolve ) => {
     setTimeout( resolve, timeMS );
@@ -258,7 +262,71 @@ describe( 'register', () => {
     } );
 
 
-    describe( 'json', () => {
+    describe.skip( 'send as number', () => {
+
+        it( 'can send as number', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="1"
+                    send="data-value|click|#out|number"
+                >Click Me</button>
+                <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
+            `;
+                // <output id="out" receive-as="value" on-receive="v => Number( out.value ) + v" >0</output>
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( 'output' );
+            expect( target.value ).toBe( '1' );
+        } );
+
+
+        it( 'can send as int', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="1.5"
+                    send="data-value|click|#out|int"
+                >Click Me</button>
+                <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#out' );
+            expect( target.value ).toBe( '1' );
+        } );
+
+
+        it( 'can send as float', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="1.5"
+                    send="data-value|click|#out|float"
+                >Click Me</button>
+                <output id="out" on-receive="v => Number( out.value ) + v" >0</output>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#out' );
+            expect( target.value ).toBe( '1.5' );
+        } );
+    } );
+
+
+    describe( 'send as json', () => {
 
         it( 'allows a target to transforming JSON data when receiving it', () => {
 
@@ -1125,6 +1193,34 @@ describe( 'register', () => {
 
             const target = document.querySelector( '#x' );
             expect( target.innerHTML ).toContain( element );
+        } );
+
+    } );
+
+
+    describe.skip( 'form', () => {
+
+        it( 'can send data as JSON when "send-as" is declared accordingly', async () => {
+
+            const url = 'http://foo.com/bar';
+
+            document.body.innerHTML = `
+                <form send-as="json" action="${url}" method="POST" >
+                    <input name="name" value="Bob" />
+                    <button type="submit" >OK</button>
+                </form>
+            `;
+
+            register( document.body, { window } );
+
+            fetchMock.mockGlobal();
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            await sleep( 1000 );
+
+            expect( fetchMock ).toHavePosted( url, { body: { name: 'Bob' } } );
         } );
 
     } );

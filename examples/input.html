@@ -6,15 +6,12 @@
     <title>Example</title>
 </head>
 <body>
-    <a
-        href="/foo"
-        prevent
-        send-prop="href"
-        send-on="click"
+    <input
+        send-prop="value"
+        send-on="change"
         send-to="div"
-    >Foo</a>
-
-    <div receive-as="text" ></div>
+    />
+    <div receive-as="text"></div>
 
     <script type="module" >
         import { register } from '../dist/index.esm.js';

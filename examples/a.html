@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example</title>
+</head>
+<body>
+    <a
+        href="/foo"
+        prevent
+        send-prop="href"
+        send-on="click"
+        send-to="div"
+    >Foo</a>
+
+    <a href="/bar" prevent send="href|click|div" >Bar</a>
+
+    <div receive-as="text" ></div>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

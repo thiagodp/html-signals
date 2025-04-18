@@ -6,13 +6,18 @@
     <title>Example</title>
 </head>
 <body>
-    <input
-        send-prop="value"
-        send-on="change"
-        send-to="div"
-    />
-    <div receive-as="text"></div>
+    <div send="text|click|#x" >Click Me</div>
 
+    <div id="x"
+        receive-as="text"
+        on-receive="(text) => 'Do not ' + text + '!'"
+        send="text|receive|#y"
+    >Two</div>
+
+    <div id="y"
+        receive-as="text"
+        on-receive="(text) => text + '? 🤔'"
+    >Three</div>
 
     <script type="module" >
         import { register } from '../dist/index.esm.js';

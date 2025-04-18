@@ -1,4 +1,6 @@
 node_modules
 dist
-test.html
+test-results
 .vscode
+test.html
+readme copy.md

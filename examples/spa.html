@@ -9,7 +9,7 @@
     <p>👉 Please open with an HTTP server at the project root folder</p>
 
     <a href="/foo" data-href="/examples/partials/foo.html" prevent send-prop="data-href" send-on="click" send-to="main" send-as="text"  >Foo</a>
-    <a href="/bar" data-href="/examples/partials/bar.html" prevent send-prop="data-href" send-on="click" send-to="main" send-as="text"  >Bar</a>
+    <a href="/bar" data-href="/examples/partials/bar.html" prevent send="data-href|click|main|text" >Bar</a>
 
     <main receive-as="fetch-html" on-receive-error="({message},target) => console.log(message)" ></main>
 
