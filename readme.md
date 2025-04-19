@@ -147,8 +147,9 @@ export function unregister(): void;
 
     - `prevent` - to call preventDefault() on `<a>`, `<form>`, etc.
 
-    - `headers` - to specify HTTP headers to include in a HTTP request, using JSON with unquoted or single-quoted properties.
+    - `headers` - specify headers to include in an HTTP request, using JSON format with unquoted or single-quoted properties.
       - Example: `headers="{'Accept': 'text/plain'}"`
+      - These headers are considered for all `fetch-*` values for the properties `receive-as` and `send-as`.
 
 
 #### Notes
