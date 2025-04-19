@@ -159,7 +159,12 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         const isHTML = sendAs === 'fetch-html';
         const prop = isHTML ? 'innerHTML' : 'innerText';
 
-        return options!.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
+        const fetchOptions: RequestInit = {
+            signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
+            credentials: 'include',
+        };
+
+        return options!.fetch( content, fetchOptions )
             .then( response => {
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
@@ -306,7 +311,12 @@ function receive( root, targetElement, content, options?: Options ) {
         const isHTML = receiveAs === 'fetch-html';
         const prop = isHTML ? 'innerHTML' : 'innerText';
 
-        return options.fetch( content, { signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ) } )
+        const fetchOptions: RequestInit = {
+            signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
+            credentials: 'include',
+        };
+
+        return options.fetch( content, fetchOptions )
             .then( response => {
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );

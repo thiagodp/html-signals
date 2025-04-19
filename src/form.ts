@@ -85,9 +85,10 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
         // Fetch
         // TODO: define option to retrieve content when the response is received
 
-        const fetchOptions = {
+        const fetchOptions: RequestInit = {
             method,
             signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
+            credentials: 'include',
             headers: httpHeaders,
         };
 

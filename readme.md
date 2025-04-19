@@ -8,7 +8,26 @@
 
 ### Usage
 
-⌛ *Soon*
+Just include the library in your application and call `register()`.
+
+Example using a CDN:
+```html
+<body>
+    <form method="POST" action="/foo" send-as="json"
+        on-send-error="error => msg.innerText = 'Ops... ' + error.message;"
+        >
+        <label for="name" >Name:</label>
+        <input type="text" name="name" id="name" required />
+        <button type="submit" >Send</button>
+        <div id="msg" ></div>
+    </form>
+
+    <script type="module" >
+        import { register } from "https://unpkg.com/html-signals/dist/index.esm.js";
+        register(); // Done
+    </script>
+</body>
+```
 
 ### Functions
 
@@ -33,7 +52,7 @@ export function unregister(): void;
 
 ### Properties for HTML elements
 
-1. A **form** element can also use `method` with `PUT`, `PATCH` and `DELETE`.
+1. A **form** element can also use `method` with `PUT`, `PATCH` and `DELETE` (version `0.11.0`+).
     - There must be an input element named `id` that can be hidden;
     - The value of the element named `id` will be dynamically added to the URL in `action`
       - Example that will send a HTTP `DELETE` to `/foo/10`:
@@ -47,14 +66,24 @@ export function unregister(): void;
       - `"form"`, that is the _default_ value, will send as `application/x-www-form-urlencoded`;
       - `"json"` will send as `application/json`;
       - `"multipart"` will send as `multipart/form-data`.
+    - Example that will send a JSON object:
+      ```html
+      <form method="POST" action="/foo" send-as="json" >
+        <label for="name" >Name:</label>
+        <input type="text" name="name" id="name" required />
+        <button type="submit" >Send</button>
+      </form>
+      ```
 
 
-2. A **form** can use the property `headers` with additional HTTP headers with single-quoted JSON.
+2. A **form** can use the property `headers` with additional HTTP headers with single-quoted JSON (version `0.13.0`+).
     - Example that will send a `PUT` to `/foo/10` with the additional headers `"X-Foo"` with `"Hello"` and `"X-Bar"` with `"World"`:
       ```html
       <form method="PUT" action="/foo" headers="{'X-Foo':'Hello', 'X-Bar':'World'}" >
         <input type="hidden" name="id" value="10" />
-        <button type="submit" >Delete</button>
+        <label for="name" >Name:</label>
+        <input type="text" name="name" id="name" required />
+        <button type="submit" >Send</button>
       </form>
       ```
     - Additional headers can subscribe default headers, if desired. Example: `headers="{'Content-Type': 'text/plain'}"`.
@@ -62,7 +91,7 @@ export function unregister(): void;
 
 3. Any **HTML element** can possibly use the following properties to augment their behavior:
 
-    - `send-prop` with a single property (changed from `send-what` after version `0.8.0`)
+    - `send-prop` with a single property (version `0.8.0`+)
 
     - `send-element` with a single element
 
@@ -123,6 +152,7 @@ export function unregister(): void;
 
 - `send-prop` and `send-element` must not be used together.
 - When `"element-clone"` references a `<template>` tag, it will clone the template's content.
+- Default `fetch` options use `{ credentials: 'include' }` for sending cookies or other headers needed in the server.
 
 #### Limitations
 
