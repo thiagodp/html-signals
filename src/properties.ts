@@ -43,7 +43,7 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
     const sendAs = el.getAttribute( 'send-as' ) || undefined;
 
     // Element is FORM and does not have onsubmit registered
-    if ( ! sendOn && el.tagName === 'FORM' && typeof el['onsubmit'] !== 'function' ) {
+    if ( ! sendOn && el.tagName === 'FORM' && ! el.getAttribute( 'onsubmit' ) ) {
         sendOn = 'submit';
         sendTo = el.getAttribute( 'action' ) || undefined;
         return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
