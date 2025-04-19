@@ -5,8 +5,7 @@ TO-DO:
     -> send-to with more than one element receive all the properties, or the properties in order?
 - send-on with multiple events, in order
 
-👇 WIP
-- headers
+- headers for all http-related properties
   - e.g.: headers="{ 'X-Foo': 'Bar' }"
 
 - on-receive with async function

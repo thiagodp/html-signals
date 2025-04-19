@@ -1,4 +1,5 @@
 import { makeFunction } from './function.js';
+import { parseUnquotedJSON } from './parser.js';
 import { Options, SenderProperties } from './types.js';
 
 
@@ -126,21 +127,28 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
 }
 
 
-function extractHeaders( text ): Record< string, string > | undefined {
+function extractHeaders( text ): Record< string, any > | undefined {
     if ( ! text ) {
         return;
     }
-    const headers = text.split( '|' );
-    const obj = {};
-    for ( const h of headers ) {
-        const [ key, value ] = h.split( ':' ).map( v => v.trim() );
-        obj[ key ] = value
+    // > Pipe-separated format
+    // const headers = text.split( '|' );
+    // const obj = {};
+    // for ( const h of headers ) {
+    //     const [ key, value ] = h.split( ':' ).map( v => v.trim() );
+    //     obj[ key ] = value
+    // }
+    // return obj;
+    try {
+        return parseUnquotedJSON( text ) as Record< string, any >;
+    } catch ( error ) {
+        console.error( error.message );
+        return undefined;
     }
-    return obj;
 }
 
 
-function addHeaders( from: Record< string, string >, to: Record< string, string > ) {
+function addHeaders( from: Record< string, any >, to: Record< string, any > ) {
     for ( const h in from ) {
         to[ h ] = from[ h ];
     }

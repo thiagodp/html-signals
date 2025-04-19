@@ -31,12 +31,12 @@ export function parseFunction( functionString ) {
 
 
 /**
- * Parse a JSON string with unquoted or single-quoted properties.
+ * Transform a JSON string with unquoted or single-quoted properties to an object.
  *
  * @param jsonString Input string with JSON content
- * @returns string with JSON
+ * @returns object
  */
-export function parseUnquotedJSON( jsonString: string ): string {
+export function parseUnquotedJSON( jsonString: string ): object {
 
     // Replace unquoted keys with quoted keys
     const newJsonString = jsonString.replace( /([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '"$1":' );

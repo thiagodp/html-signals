@@ -49,15 +49,15 @@ export function unregister(): void;
       - `"multipart"` will send as `multipart/form-data`.
 
 
-2. A **form** can use the property `headers` with additional HTTP headers separated by pipe (`|`).
+2. A **form** can use the property `headers` with additional HTTP headers with single-quoted JSON.
     - Example that will send a `PUT` to `/foo/10` with the additional headers `"X-Foo"` with `"Hello"` and `"X-Bar"` with `"World"`:
       ```html
-      <form method="PUT" action="/foo" headers="X-Foo:Hello|X-Bar:World" >
+      <form method="PUT" action="/foo" headers="{'X-Foo':'Hello', 'X-Bar':'World'}" >
         <input type="hidden" name="id" value="10" />
         <button type="submit" >Delete</button>
       </form>
       ```
-    - Additional headers can subscribe default headers, if desired. Example: `headers="Content-Type: text/plain"`.
+    - Additional headers can subscribe default headers, if desired. Example: `headers="{'Content-Type': 'text/plain'}"`.
 
 
 3. Any **HTML element** can possibly use the following properties to augment their behavior:
