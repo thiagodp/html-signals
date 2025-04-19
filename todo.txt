@@ -1,5 +1,7 @@
 TO-DO:
 
+OK- include fetchOptions in register()'s options
+
 - send-prop with multiple properties, in order.
     -> send-as is repeated for every property if not declared ?
     -> send-to with more than one element receive all the properties, or the properties in order?

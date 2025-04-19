@@ -1,6 +1,7 @@
 import { addAnyPolyfillToAbortSignalIfNeeded, createAbortController, destroyAbortController, signal } from './abortion.js';
 import { registerSubmitEvent } from './form.js';
 import { makeFunction } from './function.js';
+import { extractHeaders } from './headers.js';
 import { parseUnquotedJSON } from './parser.js';
 import { collectSenderProperties } from './properties.js';
 import { Options, SenderProperties } from './types.js';
@@ -164,6 +165,11 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
             credentials: 'include',
         };
 
+        const headers = extractHeaders( sender.getAttribute( 'headers' ) );
+        if ( headers ) {
+            fetchOptions.headers = headers;
+        }
+
         return options!.fetch( content, fetchOptions )
             .then( response => {
                 if ( ! response.ok ) {
@@ -264,6 +270,7 @@ function receive( root, targetElement, content, options?: Options ) {
 
     const onReceive = targetElement.getAttribute( 'on-receive' ) || undefined;
     const onReceiveFn: Function | undefined = makeFunction( onReceive );
+
     if ( onReceiveFn ) {
         try {
             // console.log( 'WILL RUN on-receive', '\n\tbefore:', content );
@@ -315,6 +322,11 @@ function receive( root, targetElement, content, options?: Options ) {
             signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
             credentials: 'include',
         };
+
+        const headers = extractHeaders( targetElement.getAttribute( 'headers' ) );
+        if ( headers ) {
+            fetchOptions.headers = headers;
+        }
 
         return options.fetch( content, fetchOptions )
             .then( response => {
@@ -408,7 +420,10 @@ function sendAsDOMToTarget( html: string, target: HTMLElement ): void {
 }
 
 
-function evaluateHistory( targets: string ) {
+function evaluateHistory( targets?: string ) {
+    if ( ! targets ) {
+        return {};
+    }
     const historyResult = /[ ]*,?[ ]*\$history/i.exec( targets );
     let addToHistoryBeforeElements = false;
     let addToHistoryAfterElements = false;
