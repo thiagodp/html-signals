@@ -1,8 +1,8 @@
 # html-signals
 
-> HTML properties to reduce the need of writing JavaScript code
+> HTML properties for reducing the need of writing JavaScript code
 
-👉 **Work-In-Progress!**
+👉 **Work-In-Progress! API is not stable yet and things may change.**
 
 📝 **Documentation to be improved** - see [tests](/test/index.spec.ts) or [examples](/examples/) for now.
 
