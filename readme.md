@@ -1,8 +1,12 @@
+[![npm (tag)](https://img.shields.io/npm/v/html-signals?color=green&label=NPM&style=for-the-badge)](https://github.com/thiagodp/html-signals/releases)
+[![License](https://img.shields.io/npm/l/html-signals.svg?style=for-the-badge&color=green)](https://github.com/thiagodp/html-signals/blob/master/LICENSE.txt)
+[![npm](https://img.shields.io/npm/dt/html-signals?style=for-the-badge&color=green)](https://www.npmjs.com/package/html-signals)
+
 # html-signals
 
 > HTML properties for reducing the need of writing JavaScript code
 
-⚠️ **Work-In-Progress! API is not stable yet and things may change.**
+⚠️ **Work-In-Progress!**
 
 ## Basic ideas
 
