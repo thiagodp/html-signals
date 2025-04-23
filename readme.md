@@ -16,17 +16,14 @@ Moreover, forms and other components can leverage new properties to enhance thei
 - 🧠 Short learning curve
 - 🪄 Make it easy to store and share state among HTML elements
 - 🚀 Create forms that send JSON data, custom headers, and use different HTTP methods
+- 🎯 Create SPA-related behavior (routes, html replacement) without writing any related JavaScript code.
+  - _WORK-IN-PROGRESS_
+  - _Partially supported!_ See [`examples/spa.html`](examples/spa.html) and See [`examples/spa-js.html`](examples/spa-js.html)
 - 📢 Pure HTML properties, no components needed
 - 🧩 Also works with external components
 - ⚡Fast, pure vanilla JavaScript
 - 📦 Just 9k unzipped (code), no external dependencies
 - 🛡️ Unit tested
-
-Work-in-Progress:
-- 🎯 Create SPA-related behavior (routes, html replacement) without writing any related JavaScript code.
-  - _Partially supported!_ See [`examples/spa.html`](examples/spa.html) and See [`examples/spa-js.html`](examples/spa-js.html)
-- 📺 Element send a content/state when it enters the viewport.
-- 👁️ Element send a content/state when it becomes visible.
 
 
 ## Installation
@@ -271,6 +268,10 @@ export function unregister(): void;
   - ex.: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
   - ex.: `<span data-todo="{ 'title': 'Buy coffee', 'completed': false }" ></span>`
 - `$history` must be at the beginning or at the end of "send-to"
+
+
+## Roadmap
+
 
 
 ## License
