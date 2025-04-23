@@ -1,5 +1,11 @@
 TO-DO:
 
+- new data types to use in send-as and receive-as:
+  - boolean
+  - date
+  - time
+  - iso-date
+
 OK- include fetchOptions in register()'s options
 
 - send-prop with multiple properties, in order.
@@ -32,3 +38,7 @@ OK- form - offer support to send-as="json" method="..."
 - http-patch-json
 - http-delete
 
+
+👇
+- send-on="viewport"
+- send-on="visible"
