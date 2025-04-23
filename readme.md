@@ -18,14 +18,14 @@ Moreover, forms and other components can leverage new properties to enhance thei
 ## Features
 
 - 🧠 Short learning curve
-- 🪄 Make it easy to store and share state among HTML elements
-- 🚀 Create forms that send JSON data, custom headers, and use different HTTP methods
+- 🪄 Make it easy to query server state, store and share among HTML elements
+- 🚀 Make it possible that forms send JSON data, custom headers, and use different HTTP methods
 - 🎯 Create SPA-related behavior (routes, html replacement) without writing any related JavaScript code.
   - _WORK-IN-PROGRESS_
   - _Partially supported!_ See [`examples/spa.html`](examples/spa.html) and See [`examples/spa-js.html`](examples/spa-js.html)
-- 📢 Pure HTML properties, no components needed
+- 📢 Pure HTML properties
 - 🧩 Also works with external components
-- ⚡Fast, pure vanilla JavaScript
+- ⚡Fast, vanilla JavaScript
 - 📦 Just 9k unzipped (code), no external dependencies
 - 🛡️ Unit tested
 
@@ -180,12 +180,18 @@ export function unregister(): void;
     - `"element-clone"`
     - more options to appear ⌛
 
-  - `on-receive` to indicate a (synchronous) function to execute before a content is received. The function can be used to transform a content. Example:
+  - `on-receive` to indicate a (synchronous) function to execute before a content is received. The function can be used to transform a content. Examples:
     ```html
     <!-- When clicked, the div will send its text, "Hello", to the span.
          Then the span will change the text to "Hello, World!". -->
     <div send="text|click|span" >Hello</div>
     <span on-receive="text => `${text}, World!`" ></span>
+
+    <!-- When clicked, button will send its JSON object in "data-contact" to the span elements.
+         Then first span will extract and show the name (from the object), while the second will extract and show the surname. -->
+    <button data-contact="{name: 'Bob', surname: 'Dylan'}" send="data-contact|click|span|json" >Click Me</button>
+    <span on-receive="obj => obj.name"     ></span>
+    <span on-receive="obj => obj.surname"  ></span>
     ```
 
   - `on-receive-error` to indicate a function to execute when a content is received and an error occurs - usually for `fetch-*` values in `receive-as`.
@@ -253,7 +259,8 @@ export function unregister(): void;
 
   - `headers` - specify headers to include in an HTTP request, using JSON format with unquoted or single-quoted properties.
     - Example: `headers="{'Accept': 'text/plain'}"`
-    - These headers are considered for all `fetch-*` values for the properties `receive-as` and `send-as`.
+    - Headers are considered for `fetch-*` values declared in `receive-as` or `send-as`.
+
 
 ### Special values
 
@@ -266,16 +273,13 @@ export function unregister(): void;
 - When `"element-clone"` references a `<template>` tag, it will clone the template's content.
 - By default, `fetch` calls will include the option `{ credentials: 'include' }` for sending cookies and authentication headers to the server.
 
+
 ### Limitations
 
 - JSON content in element properties must have unquoted or single-quoted properties (HTML limitation)
   - ex.: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
   - ex.: `<span data-todo="{ 'title': 'Buy coffee', 'completed': false }" ></span>`
 - `$history` must be at the beginning or at the end of "send-to"
-
-
-## Roadmap
-
 
 
 ## License
