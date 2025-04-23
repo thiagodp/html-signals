@@ -17,15 +17,15 @@ Moreover, forms and other components can leverage new properties to enhance thei
 
 ## Features
 
-- 🧠 Short learning curve
-- 🪄 Make it easy to query server state, store and share among HTML elements
+- 🪄 Make it easy to query server state, store it and share it among HTML elements
 - 🚀 Make it possible that forms send JSON data, custom headers, and use different HTTP methods
 - 🎯 Create SPA-related behavior (routes, html replacement) without writing any related JavaScript code.
   - _WORK-IN-PROGRESS_
   - _Partially supported!_ See [`examples/spa.html`](examples/spa.html) and See [`examples/spa-js.html`](examples/spa-js.html)
+- 🧠 Short learning curve
 - 📢 Pure HTML properties
-- 🧩 Also works with external components
-- ⚡Fast, vanilla JavaScript
+- 🧩 Also works with third-party components
+- ⚡ Fast, vanilla JavaScript
 - 📦 Just 9k unzipped (code), no external dependencies
 - 🛡️ Unit tested
 
@@ -43,9 +43,9 @@ npm i html-signals
 Example using a CDN (_you can copy-and-paste to see it working; no installation required_):
 ```html
 <body>
-    <p>This form will send its data as JSON and present any errors in the div</p>
+    <p>This form will send its data as JSON and present any errors in the div element</p>
     <form method="POST" action="/foo" send-as="json"
-        on-send-error="error => msg.innerText = 'Ops... ' + error.message;"
+        on-send-error="error => msg.innerText = 'Ouch... ' + error.message;"
         >
         <label for="name" >Name:</label>
         <input type="text" name="name" id="name" required />
@@ -137,7 +137,7 @@ export function unregister(): void;
   - `on-send-error` to indicate a function to execute when a content is sent and an error occurs - usually for `fetch-*` values in `send-as`.
     - The function receives:
       - an `Error` object as the first argument;
-      - the HTML element that received the error as the second argument; and
+      - the target HTML element, that receives the error, as the second argument; and
       - a `fetch`'s `Response` object as the third argument, if a `fetch-*` format is used.
     Example:
     ```html
@@ -145,7 +145,7 @@ export function unregister(): void;
     <div
         data-url="https://jsonplaceholder.typicode.com/todos/1"
         send="data-url|click|#x|fetch-json"
-        on-send-error="(error, element, response) => console.log(error, element, response)"
+        on-send-error="(error, target, response) => console.log(error, target, response)"
     >Click me</a>
 
     <p id="x" receive-as="text" ></p>
@@ -197,7 +197,7 @@ export function unregister(): void;
   - `on-receive-error` to indicate a function to execute when a content is received and an error occurs - usually for `fetch-*` values in `receive-as`.
     - The function receives:
       - an `Error` object as the first argument;
-      - the HTML element that received the error as the second argument; and
+      - the target HTML element, that receives the error, as the second argument; and
       - a `fetch`'s `Response` object as the third argument, if a `fetch-*` format is used.
     Example:
     ```html
@@ -209,7 +209,7 @@ export function unregister(): void;
 
     <p id="x"
         receive-as="fetch-json"
-        on-receive-error="(error, element, response) => console.log(error, element, response)"
+        on-receive-error="(error, target, response) => console.log(error, target, response)"
     ></p>
     ```
 
