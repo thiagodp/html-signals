@@ -1,58 +1,71 @@
 import { callFunction, makeFunction } from "./function.js";
 
 let observer: MutationObserver | undefined;
-let observedElements: Set< Node > | undefined;
+let observedElements: Set< Node > | undefined; // Since MutationObserver does not have a unobserve() method yet :(
 
 
-export function createMutationObserver(): MutationObserver {
+export function getMutationObserver(): MutationObserver {
+    if ( observer ) {
+        return observer;
+    }
     observer = new MutationObserver( mutationCb );
     observedElements = new Set< Node >();
     return observer;
 }
 
 
-export function addObservedElement( ...elements: Node[] ): void {
-    if ( ! observer || ! observedElements ) {
-        return;
+export function freeMutationObserver(): void {
+    if ( observer ) {
+        observedElements?.clear();
+        observer.disconnect();
     }
+    observedElements = undefined;
+    observer = undefined;
+}
+
+
+export function addElementToObservedMutations( ...elements: Node[] ): void {
+    const observer = getMutationObserver();
     for ( const e of elements ) {
-        observedElements.add( e );
-        observer.observe( e, { subtree: true } );
+        observedElements?.add( e );
+        observer.observe( e, { subtree: true, attributes: true } );
+    }
+}
+
+
+export function removeElementFromObservedMutations( ...elements: Node[] ): void {
+    getMutationObserver(); // Just to make sure to create observedElements
+    for ( const e of elements ) {
+        observedElements?.delete( e );
     }
 }
 
 
 const mutationCb: MutationCallback = ( mutations: MutationRecord[], observer: MutationObserver ) => {
     for ( const mut of mutations ) {
+
+        const target = mut.target;
+
         // Ignore unobserved elements
         if ( ! observedElements?.has( mut.target ) ) {
             continue;
         }
+
+        // Stop observing the element after it changes
+        // TODO: make it optional
+        observedElements.delete( target );
+
         // Get "on-mutate" callback
-        const onMutate = ( mut.target as HTMLElement ).getAttribute( 'on-mutate' );
+        const onMutate = ( target as HTMLElement ).getAttribute( 'on-mutate' );
         if ( ! onMutate ) {
             continue;
         }
 
         // Get "on-mutate-error" callback
-        const onMutateError = ( mut.target as HTMLElement ).getAttribute( 'on-mutate-error' );
+        const onMutateError = ( target as HTMLElement ).getAttribute( 'on-mutate-error' );
         const onMutateErrorFn: Function | undefined = onMutateError ? makeFunction( onMutateError ) : undefined;
 
         // Call the "on-mutate" callback
-        callFunction( onMutate, [], onMutateErrorFn, mut.target );
+        callFunction( onMutate, [], onMutateErrorFn, target );
     }
 };
-
-
-export function destroyMutationObserver(): void {
-
-    if ( observer ) {
-        observer.disconnect();
-        observer = undefined;
-    }
-
-    if ( observedElements ) {
-        observedElements.clear();
-        observedElements = undefined;
-    }
-}
