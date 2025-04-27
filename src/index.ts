@@ -6,6 +6,9 @@ import { parseBoolean, parseUnquotedJSON } from './parser.js';
 import { collectSenderProperties } from './properties.js';
 import { Options, SenderProperties } from './types.js';
 
+
+export const EVENT_NAME = 'html-signal';
+
 // Fetch timeout
 let timeout: number = 5000;
 

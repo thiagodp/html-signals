@@ -1,15 +1,16 @@
-import { register } from '../src';
-
+import fetchMock from '@fetch-mock/vitest';
 import { JSDOM } from 'jsdom';
-import { describe, it, expect, beforeAll, vi, afterAll, beforeEach } from 'vitest';
 import fetch from 'node-fetch';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { EVENT_NAME, register } from '../src';
+import { DOMWindow } from 'jsdom';
 
 // import createFetchMock from 'vitest-fetch-mock';
 // const fetch = createFetchMock(vi);
 
 // import fetchMock from 'fetch-mock';
 
-import fetchMock, { manageFetchMockGlobally } from '@fetch-mock/vitest';
 // manageFetchMockGlobally(); // optional
 
 const sleep = timeMS => new Promise( ( resolve ) => {
@@ -19,8 +20,8 @@ const sleep = timeMS => new Promise( ( resolve ) => {
 
 describe( 'register', () => {
 
-    let window;
-    let document;
+    let window: DOMWindow;
+    let document: Document;
 
     const html = `
 <html>
@@ -40,8 +41,6 @@ describe( 'register', () => {
 
     afterAll( () => {
         // fetch.disableMocks();
-        document = undefined;
-        window = undefined;
     } );
 
     beforeEach( () => {
@@ -72,16 +71,16 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'input' );
-        source.value = 'Hello';
+        source!.value = 'Hello';
 
         const event = new window.Event( 'change', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( 'div' );
-        expect( target.innerText ).toBe( 'Hello' );
+        expect( ( target as HTMLElement ).innerText ).toBe( 'Hello' );
     } );
 
 
@@ -103,19 +102,19 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'input' );
-        source.value = 'Hello';
+        source!.value = 'Hello';
 
         const event = new window.Event( 'change', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( 'div' );
-        expect( target.innerText ).toBe( 'Hello' );
+        expect( ( target as HTMLElement ).innerText ).toBe( 'Hello' );
 
         const targetTwo = document.querySelector( '#two' );
-        expect( targetTwo.innerText ).toBe( 'Hello' );
+        expect( ( targetTwo as HTMLElement ).innerText ).toBe( 'Hello' );
     } );
 
 
@@ -138,19 +137,19 @@ describe( 'register', () => {
             ></span>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'input' );
-        source.value = 'Hello';
+        source!.value = 'Hello';
 
         const event = new window.Event( 'change', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( 'div' );
-        expect( target.innerText ).toBe( 'Hello' );
+        expect( ( target as HTMLElement ).innerText ).toBe( 'Hello' );
 
         const targetTwo = document.querySelector( 'span' );
-        expect( targetTwo.innerText ).toBe( 'Hello' );
+        expect( ( targetTwo as HTMLElement ).innerText ).toBe( 'Hello' );
     } );
 
 
@@ -170,14 +169,14 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( '#foo' );
-        expect( target.innerText ).toBe( content );
+        expect( ( target as HTMLElement ).innerText ).toBe( content );
     } );
 
 
@@ -197,14 +196,14 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( '#foo' );
-        expect( target.innerHTML ).toBe( content );
+        expect( target!.innerHTML ).toBe( content );
     } );
 
 
@@ -225,14 +224,14 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( '#foo' );
-        expect( target.innerText ).toBe( value );
+        expect( ( target as HTMLElement ).innerText ).toBe( value );
     } );
 
 
@@ -255,14 +254,14 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window } );
+        register( document.body, { window: window as unknown as Window } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+        source!.dispatchEvent( event );
 
         const target = document.querySelector( '#foo' );
-        expect( target.innerText ).toBe( 'Number: ' + value );
+        expect( ( target as HTMLElement ).innerText ).toBe( 'Number: ' + value );
     } );
 
 
@@ -279,13 +278,13 @@ describe( 'register', () => {
             `;
                 // <output id="out" receive-as="value" on-receive="v => Number( out.value ) + v" >0</output>
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( 'output' );
-            expect( target.value ).toBe( '1' );
+            expect( target!.value ).toBe( '1' );
         } );
 
 
@@ -299,13 +298,13 @@ describe( 'register', () => {
                 <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( '#out' );
-            expect( target.value ).toBe( '1' );
+            expect( ( target as HTMLInputElement ).value ).toBe( '1' );
         } );
 
 
@@ -319,13 +318,13 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => Number( out.value ) + v" >0</output>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( '#out' );
-            expect( target.value ).toBe( '1.5' );
+            expect( ( target as HTMLInputElement ).value ).toBe( '1.5' );
         } );
 
 
@@ -339,13 +338,13 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( '#out' );
-            expect( target.value ).toBe( 'true' );
+            expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
         } );
 
 
@@ -359,13 +358,13 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( '#out' );
-            expect( target.value ).toBe( 'true' );
+            expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
         } );
 
     } );
@@ -390,16 +389,16 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
-            expect( source.getAttribute( 'data-id' ) ).toBe( '{ value: 10 }' );
+            expect( source!.getAttribute( 'data-id' ) ).toBe( '{ value: 10 }' );
 
             const target = document.querySelector( '#foo' );
-            expect( target.innerText ).toBe( '10' );
+            expect( ( target as HTMLElement ).innerText ).toBe( '10' );
         } );
 
 
@@ -420,14 +419,14 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#foo' );
-            expect( target.innerText ).toBe( '10' );
+            expect( ( target as HTMLElement ).innerText ).toBe( '10' );
         } );
 
 
@@ -447,15 +446,15 @@ describe( 'register', () => {
                 >Foo</div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
-            expect( window.history.length ).toBe( 1 );
+            expect( window!.history.length ).toBe( 1 );
 
-            const spy = vi.spyOn( window.history, 'pushState' );
+            const spy = vi.spyOn( window!.history, 'pushState' );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             expect( spy ).toHaveBeenCalled();
 
@@ -483,16 +482,16 @@ describe( 'register', () => {
                 <div receive-as="text" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'a' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
-            expect( window.location.href ).not.toBe( '/foo' );
+            expect( window!.location.href ).not.toBe( '/foo' );
 
             const target = document.querySelector( 'div' );
-            expect( target.innerText ).toBe( '/foo' );
+            expect( ( target as HTMLElement ).innerText ).toBe( '/foo' );
         } );
 
     });
@@ -516,20 +515,20 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch, window } );
+            register( document.body, { fetch, window: window as unknown as Window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https:/google.com', '<html></html>' );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             await sleep( 1000 );
             // await sleep( 1 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( 'html' );
+            expect( target!.innerHTML ).toContain( 'html' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -553,20 +552,20 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch, window } );
+            register( document.body, { fetch, window: window as unknown as Window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             // fetchMock.mockGlobal().get( 'https://google.com', '<html></html>' );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             await sleep( 1000 );
             // await sleep( 1 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( 'html' );
+            expect( target!.innerHTML ).toContain( 'html' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -590,7 +589,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const obj = {
                 "userId": 1,
@@ -604,13 +603,13 @@ describe( 'register', () => {
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             // await sleep( 1000 );
             await sleep( 1 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerText ).toContain( 'delectus aut autem' );
+            expect( ( target as HTMLElement ).innerText ).toContain( 'delectus aut autem' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -633,7 +632,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const obj = {
                 "userId": 1,
@@ -647,13 +646,13 @@ describe( 'register', () => {
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             // await sleep( 1000 );
             await sleep( 1 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerText ).toContain( 'delectus aut autem' );
+            expect( ( target as HTMLElement ).innerText ).toContain( 'delectus aut autem' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -678,20 +677,20 @@ describe( 'register', () => {
             `;
 
             // register( document.body );
-            register( document.body, { fetch, window } );
+            register( document.body, { fetch, window: window as unknown as Window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             // fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             // await sleep( 1 );
             await sleep( 1000 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( 'html' );
+            expect( target!.innerHTML ).toContain( 'html' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -714,20 +713,20 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             // await sleep( 1000 );
             await sleep( 1 );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerText ).toContain( 'html' );
+            expect( ( target as HTMLElement ).innerText ).toContain( 'html' );
 
             // expect( fetch.requests().length ).toEqual( 1 );
         } );
@@ -754,14 +753,14 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
         } );
 
 
@@ -782,19 +781,19 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
 
             const firstP = document.querySelector( 'p' );
-            firstP.innerText = 'Hello World';
+            firstP!.innerText = 'Hello World';
 
-            expect( target.innerHTML ).toContain( element ); // Keeps the old value
+            expect( target!.innerHTML ).toContain( element ); // Keeps the old value
         } );
 
 
@@ -815,19 +814,19 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
 
             const firstP = document.querySelector( 'p' );
-            firstP.innerText = 'Hello World';
+            firstP!.innerText = 'Hello World';
 
-            expect( target.innerHTML ).toContain( element ); // Keeps the old value
+            expect( target!.innerHTML ).toContain( element ); // Keeps the old value
         } );
 
 
@@ -848,14 +847,14 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
         } );
 
 
@@ -877,19 +876,19 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
 
             const firstP = document.querySelector( 'p' );
-            firstP.innerText = 'Hello World';
+            firstP!.innerText = 'Hello World';
 
-            expect( target.innerHTML ).toContain( element ); // Keeps the old value
+            expect( target!.innerHTML ).toContain( element ); // Keeps the old value
         } );
 
 
@@ -911,7 +910,7 @@ describe( 'register', () => {
             `;
 
             expect( () => {
-                register( document.body, { window } );
+                register( document.body, { window: window as unknown as Window } );
             } ).toThrowError();
         } );
 
@@ -937,15 +936,15 @@ describe( 'register', () => {
                     <div id="x" receive-as="element" ></div>
                 `;
 
-                register( document.body, { window }  );
+                register( document.body, { window: window as unknown as Window }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
-                source.dispatchEvent( event );
+                source!.dispatchEvent( event );
 
                 const target = document.querySelector( '#x' );
-                expect( target.innerHTML ).not.toContain( 'template' );
-                expect( target.innerHTML ).toContain( element );
+                expect( target!.innerHTML ).not.toContain( 'template' );
+                expect( target!.innerHTML ).toContain( element );
             } );
 
 
@@ -968,15 +967,15 @@ describe( 'register', () => {
                     <div id="x" receive-as="element-clone" ></div>
                 `;
 
-                register( document.body, { window }  );
+                register( document.body, { window: window as unknown as Window }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
-                source.dispatchEvent( event );
+                source!.dispatchEvent( event );
 
                 const target = document.querySelector( '#x' );
-                expect( target.innerHTML ).not.toContain( 'template' );
-                expect( target.innerHTML ).toContain( element );
+                expect( target!.innerHTML ).not.toContain( 'template' );
+                expect( target!.innerHTML ).toContain( element );
             } );
 
         } );
@@ -1002,14 +1001,14 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( 'World' );
+            expect( target!.innerHTML ).toContain( 'World' );
         } );
 
     } );
@@ -1030,18 +1029,16 @@ describe( 'register', () => {
                     send-as="element"
                 >Foo</div>
 
-                <div id="x"
-                    on-receive="(el) => { el.textContent = 'World'; return el; }"
-                    receive-as="element"
-                ></div>
+                <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { document, window } );
+            register( document.body, { document, window: window as unknown as Window } );
 
-            document.dispatchEvent( new window.Event( 'DOMContentLoaded', {} ) );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( EVENT_NAME) );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( 'World' );
+            expect( target!.textContent ).toContain( 'Hello' );
         } );
 
 
@@ -1067,16 +1064,16 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window } );
+            register( document.body, { document, window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
-            const target1 = document.querySelector( '#x' );
+            const target1 = document.querySelector( '#x' ) as HTMLElement;
             expect( target1.innerText ).toContain( 'Foo' );
 
-            const target2 = document.querySelector( '#y' );
+            const target2 = document.querySelector( '#y' ) as HTMLElement;
             expect( target2.innerText ).toContain( 'Foo' );
         } );
 
@@ -1103,16 +1100,16 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window } );
+            register( document.body, { document, window: window as unknown as Window  } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
-            const target1 = document.querySelector( '#x' );
+            const target1 = document.querySelector( '#x' ) as HTMLElement;
             expect( target1.innerText ).toContain( 'Foo!!' );
 
-            const target2 = document.querySelector( '#y' );
+            const target2 = document.querySelector( '#y' ) as HTMLElement;
             expect( target2.innerText ).toContain( 'Foo!!' );
         } );
 
@@ -1140,16 +1137,16 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window } );
+            register( document.body, { document, window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
-            const target1 = document.querySelector( '#x' );
+            const target1 = document.querySelector( '#x' ) as HTMLElement;
             expect( target1.innerText ).toContain( 'Foo!' );
 
-            const target2 = document.querySelector( '#y' );
+            const target2 = document.querySelector( '#y' ) as HTMLElement;
             expect( target2.innerText ).toContain( 'Foo!?' );
         } );
 
@@ -1176,11 +1173,11 @@ describe( 'register', () => {
                     ></div>
                 `;
 
-                register( document.body, { document, window } );
+                register( document.body, { document, window: window as unknown as Window } );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
-                source.dispatchEvent( event );
+                source!.dispatchEvent( event );
             };
 
             expect( async () => await Promise.all( [ run, sleep( 1000 ) ] ) ).toThrow();
@@ -1203,16 +1200,16 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'input' );
-            source.value = 'Hello';
+            source!.value = 'Hello';
 
             const event = new window.Event( 'change', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( 'div' );
-            expect( target.innerText ).toBe( 'Hello' );
+            expect( ( target as HTMLElement ).innerText ).toBe( 'Hello' );
         } );
 
 
@@ -1230,14 +1227,14 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
-            source.dispatchEvent( event );
+            source!.dispatchEvent( event );
 
             const target = document.querySelector( '#x' );
-            expect( target.innerHTML ).toContain( element );
+            expect( target!.innerHTML ).toContain( element );
         } );
 
 
@@ -1252,18 +1249,18 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
             const event = new window.Event( 'click', {} );
 
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '10' );
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '10' );
 
-            target.innerText = '20';
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '20' ); // Not '10'
+            ( target as HTMLElement ).innerText = '20';
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '20' ); // Not '10'
         } );
 
 
@@ -1283,12 +1280,12 @@ describe( 'register', () => {
                 </form>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             fetchMock.mockGlobal();
 
             const source = document.querySelector( 'button' );
-            source.dispatchEvent( new window.Event( 'click', {} ) );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
             await sleep( 1000 );
 
@@ -1314,18 +1311,18 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
             const event = new window.Event( 'click', {} );
 
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '10' );
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '10' );
 
-            target.innerText = '20';
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '20' ); // Not '10'
+            ( target as HTMLElement ).innerText = '20';
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '20' ); // Not '10'
         } );
 
 
@@ -1342,18 +1339,18 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window } );
+            register( document.body, { window: window as unknown as Window } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
             const event = new window.Event( 'click', {} );
 
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '10' );
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '10' );
 
-            target.innerText = '20';
-            source.dispatchEvent( event );
-            expect( target.innerText ).toContain( '10' );
+            ( target as HTMLElement ).innerText = '20';
+            source!.dispatchEvent( event );
+            expect( ( target as HTMLElement ).innerText ).toContain( '10' );
         } );
 
     } );
