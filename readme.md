@@ -23,7 +23,6 @@ Moreover, forms and other components can leverage new properties to enhance thei
   - _WORK-IN-PROGRESS_
   - _Partially supported!_ See [`examples/spa.html`](examples/spa.html) and See [`examples/spa-js.html`](examples/spa-js.html)
 - 🧠 Short learning curve
-- 📢 Pure HTML properties
 - 🧩 Also works with third-party components
 - ⚡ Fast, vanilla JavaScript
 - 📦 Just 9k unzipped (code), no external dependencies

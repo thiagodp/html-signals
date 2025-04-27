@@ -14,12 +14,13 @@
 
     <label for="desiredId" >Desired To-Do Id:</label>
     <input id="desiredId" type="number" send="value|change|#go" value="4" />
-
     <button id="go" data-url="https://jsonplaceholder.typicode.com/todos/4"
-        on-receive="v => { go.dataset.url='https://jsonplaceholder.typicode.com/todos/' + v; return 'Go'; }"
+        receive-as="data-url"
+        on-receive="v => 'https://jsonplaceholder.typicode.com/todos/' + v;"
         send="data-url|click|form input|fetch-json"
         on-send-error="({message}) => msg.innerText = message;"
     >Go</button>
+    <hr />
 
     <form method="PUT" action="https://jsonplaceholder.typicode.com/todos" send-as="json" >
         <input type="hidden" id="id" on-receive="toDo => id.value = toDo.id" />
