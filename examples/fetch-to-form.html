@@ -3,14 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fetch JSON on send</title>
+    <title>Fetch to Form</title>
 </head>
 <body>
     <span
         data-url="https://jsonplaceholder.typicode.com/todos/4"
-        send="data-url|domcontentloaded|input|fetch-json"
-        on-send-error="({message},target) => msg.innerText = message;"
+        send="data-url|domcontentloaded|form input|fetch-json"
+        on-send-error="({message}) => msg.innerText = message;"
     ></span>
+
+    <label for="todoId" >To-Do Id:</label>
+    <input id="todoId" value="4" type="number" send="value|change|#go" />
+
+    <button id="go" data-url=""
+        on-receive="v => { go.dataset.url='https://jsonplaceholder.typicode.com/todos/' + v; return 'Go'; }"
+        send="data-url|click|form input|fetch-json"
+        on-send-error="({message}) => msg.innerText = message;"
+    >Go</button>
 
     <form method="PUT" action="https://jsonplaceholder.typicode.com/todos" send-as="json" >
         <input type="hidden" id="id" on-receive="toDo => id.value = toDo.id" />
@@ -19,6 +28,7 @@
         <input type="checkbox" id="completed" on-receive="toDo => completed.checked = toDo.completed" />
         <label for="completed">Completed</label>
         <button>Send</button>
+        <div id="msg" ></div>
     </form>
 
     <script type="module" >
