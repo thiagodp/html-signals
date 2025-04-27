@@ -87,7 +87,10 @@ function configureSender( root, el: Element, signal, options: Options ) {
 
     senderProps.sendOn = sendOn; // Just to sync values
 
-    el.addEventListener( sendOn, makeEventThatMakesTargetsToReceiveTheProperty( root, senderProps, options ), { signal } );
+    el.addEventListener( sendOn,
+        makeEventThatMakesTargetsToReceiveTheProperty( root, senderProps, options ),
+        { signal, once: senderProps.sendOnce || false }
+    );
 }
 
 
@@ -319,9 +322,7 @@ function receive( root, targetElement, content, options?: Options ) {
     } else if ( receiveAs === 'float' && typeof content !== 'number' ) {
         content = parseFloat( content );
     } else if ( receiveAs === 'boolean' ) {
-        console.log( 'as boolean' );
         content = parseBoolean( content );
-        console.log( content, typeof content );
     }
 
     // receiveAs with fetch-*

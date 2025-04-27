@@ -2,9 +2,9 @@ TO-DO:
 
 - new data types to use in send-as and receive-as:
   OK- boolean
-  - date
-  - time
-  - iso-date
+  - date      -> "year-month-day"
+  - time      -> "hour:minute:second.millis" or "hour:minute:second" or "hour:minute"
+  - datetime  -> "year-month-day'T'hour:minute:second.millis'Z'"
 
 OK- include fetchOptions in register()'s options
 
@@ -18,31 +18,23 @@ OK- include fetchOptions in register()'s options
 OK- headers for all http-related properties
   - e.g.: headers="{ 'X-Foo': 'Bar' }"
 
-- on-receive with async function
-
-
-OK- send property that encapsulates all send-xxx?
-  send="data-href|click|main|text"
-
-    but what about send-element? Use {} to encapsulate the query selector?
-      send="{#foo}|click|main"
-
-      send="props OR {element}|actions|targets|format"
-
-OK- form - offer support to send-as="json" method="..."
-
-  <form method="PUT action="..." send-as="json" > ?
+- on-receive with async function (?)
 
 - on-mutate ?
 
-👇
-- send-on="viewport" (once)
+
+👇 ?
+- send-on="enter-viewport"
+- send-on="leave-viewport" (once)
 - send-on="visible" (once)
 - send-on="enabled" (once)
 
-in-viewport
-not-in-viewport
-visible
-not-visible
+Is it worth it to create events like "on-enter-viewport" and "on-leave-viewport" ?
 
-in-viewport-always
+visible --> assumes that the element starts as not visible
+not-visible --> assumes that the element starts as visible
+
+👇
+- send-once=true
+  OK-> addEventListener( ..., { once: true } );
+  -> affects viewport and visibility events

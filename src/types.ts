@@ -19,8 +19,9 @@ export type SenderProperties = {
     sendAs?: string,
     sendOn?: string,
     sendTo?: string,
+    sendOnce?: boolean,
     prevent?: string | boolean,
-    onSendError?: string
+    onSendError?: string,
 }
 
 export type ReceiverProperties = {

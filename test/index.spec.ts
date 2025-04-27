@@ -1240,6 +1240,33 @@ describe( 'register', () => {
             expect( target.innerHTML ).toContain( element );
         } );
 
+
+        it( 'can send a content only once when true is passed after the format', async () => {
+
+            document.body.innerHTML = `
+                <div
+                    data-x="10"
+                    send="data-x|click|#x|text|true"
+                >Click Me</div>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'div' );
+            const target = document.querySelector( '#x' );
+            const event = new window.Event( 'click', {} );
+
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '10' );
+
+            target.innerText = '20';
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '20' ); // Not '10'
+        } );
+
+
     } );
 
 
@@ -1266,6 +1293,67 @@ describe( 'register', () => {
             await sleep( 1000 );
 
             expect( fetchMock ).toHavePosted( url, { body: { name: 'Bob' } } );
+        } );
+
+    } );
+
+
+    describe( 'send-once', () => {
+
+        it( 'makes the element to send only once', async () => {
+
+            document.body.innerHTML = `
+                <div
+                    data-x="10"
+                    send-prop="data-x"
+                    send-on="click"
+                    send-to="#x"
+                    send-once
+                >Click Me</div>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'div' );
+            const target = document.querySelector( '#x' );
+            const event = new window.Event( 'click', {} );
+
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '10' );
+
+            target.innerText = '20';
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '20' ); // Not '10'
+        } );
+
+
+        it( 'when omitted, the element keeps sending the content', async () => {
+
+            document.body.innerHTML = `
+                <div
+                    data-x="10"
+                    send-prop="data-x"
+                    send-on="click"
+                    send-to="#x"
+                >Click Me</div>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'div' );
+            const target = document.querySelector( '#x' );
+            const event = new window.Event( 'click', {} );
+
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '10' );
+
+            target.innerText = '20';
+            source.dispatchEvent( event );
+            expect( target.innerText ).toContain( '10' );
         } );
 
     } );

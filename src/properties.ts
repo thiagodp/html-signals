@@ -2,7 +2,7 @@ import { SenderProperties } from "./types.js";
 
 export function collectSenderProperties( el: Element ): SenderProperties | null {
 
-    const checkedProperties = ( { sendProp, sendElement, sendOn, sendTo, sendAs, prevent } ) => {
+    const checkedProperties = ( { sendProp, sendElement, sendOn, sendTo, sendAs, sendOnce, prevent } ) => {
 
         if ( sendProp && sendElement ) {
             throw new Error( 'Element "' + el.tagName + '" must not declare both "send-prop" and "send-element".' );
@@ -16,7 +16,7 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
             return null;
         }
 
-        return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
+        return { sendProp, sendElement, sendOn, sendTo, sendAs, sendOnce, prevent };
     }
 
     const extractElement = text => {
@@ -29,11 +29,13 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
 
     const send = el.getAttribute( 'send' ) || undefined;
     if ( send ) {
-        const [ sendProp, sendOn, sendTo, sendAs ] = send.split( '|' ).map( value => value.trim() || undefined );
+        const [ sendProp, sendOn, sendTo, sendAs, once ] = send.split( '|' ).map( value => value.trim() || undefined );
+        const sendOnce = once === 'true' || once === '1' ? true : false; // It should be explicit
         const sendElement = extractElement( sendProp );
-        // console.log( sendElement, sendProp, sendOn, sendTo, sendAs );
+        // console.log( sendElement, sendProp, sendOn, sendTo, sendAs, sendOnce );
 
-        return checkedProperties( { sendProp: ( sendElement ? undefined : sendProp ), sendElement, sendOn, sendTo, sendAs, prevent } );
+        return checkedProperties(
+            { sendProp: ( sendElement ? undefined : sendProp ), sendElement, sendOn, sendTo, sendAs, sendOnce, prevent } );
     }
 
     const sendProp = el.getAttribute( 'send-prop' ) || undefined;
@@ -41,13 +43,14 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
     let sendOn = el.getAttribute( 'send-on' ) || undefined;
     let sendTo = el.getAttribute( 'send-to' ) || undefined;
     const sendAs = el.getAttribute( 'send-as' ) || undefined;
+    const sendOnce = [ '', 'true', '1' ].includes( el.getAttribute( 'send-once' )! ); // Implicit when ''
 
     // Element is FORM and does not have onsubmit registered
     if ( ! sendOn && el.tagName === 'FORM' && ! el.getAttribute( 'onsubmit' ) ) {
         sendOn = 'submit';
         sendTo = el.getAttribute( 'action' ) || undefined;
-        return { sendProp, sendElement, sendOn, sendTo, sendAs, prevent };
+        return { sendProp, sendElement, sendOn, sendTo, sendAs, sendOnce, prevent };
     }
 
-    return checkedProperties( { sendProp, sendElement, sendOn, sendTo, sendAs, prevent } );
+    return checkedProperties( { sendProp, sendElement, sendOn, sendTo, sendAs, sendOnce, prevent } );
 }

@@ -152,13 +152,30 @@ export function unregister(): void;
     <p id="x" receive-as="text" ></p>
     ```
 
-  - `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to` and `send-as`.
-    - Syntax 1: `send="property to send|event|target element(s)|format"`, where `format` is optional (default `text`). Example:
+  - `send-once` indicates that the event must be executed only once.
+    - Syntax: `send-once`, or `send-once` with a boolean false.
+    - Example:
+    ```html
+    <!-- In the first time when the div is clicked, it will send the content of "data-x" to the span -->
+    <div data-x="100" send-prop="data-x" send-on="click" send-to="span"
+        send-once
+    >Click me</a>
+    <span receive-as="text" ></span>
+    ```
+
+  - `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to`, `send-as`, `send-once`.
+    - _Syntax 1_: `send="property to send|event|target element(s)|format|once"`, where:
+      - `format` is optional (default `text`).
+      - `once` is optional (default `false`). When defined, it must be placed after `format`.
+      - Example:
       ```html
       <!-- When changed, the input will send its value as text to the div element. -->
       <input send="value|change|div" /> <div receive-as="text" ></div>
       ```
-    - Syntax 2: `send="{query selector for the element to send}|event|target element(s)|format"`, where `format` is optional (default `text`). Example:
+    - _Syntax 2_: `send="{query selector for the element to send}|event|target element(s)|format|once"`, where:
+      - `format` is optional (default `text`).
+      - `once` is optional (default `false`). When defined, it must be placed after `format`.
+      - Example:
       ```html
       <!-- When clicked, the div will send the paragraph element to the span with id "bar" -->
       <div send="{p}|click|#bar" >Click Me</div>
