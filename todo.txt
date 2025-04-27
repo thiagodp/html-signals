@@ -38,3 +38,6 @@ not-visible --> assumes that the element starts as visible
 - send-once=true
   OK-> addEventListener( ..., { once: true } );
   -> affects viewport and visibility events
+
+
+- Fix 'send' with event 'receive'
