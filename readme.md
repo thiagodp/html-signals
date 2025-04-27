@@ -156,10 +156,9 @@ export function unregister(): void;
     - Syntax: `send-once`, or `send-once` with a boolean false.
     - Example:
     ```html
-    <!-- In the first time when the div is clicked, it will send the content of "data-x" to the span -->
-    <div data-x="100" send-prop="data-x" send-on="click" send-to="span"
-        send-once
-    >Click me</a>
+    <!-- When the div is clicked for the first time (only), it will send "data-x"'s content to the span -->
+    <div data-x="100" send-prop="data-x" send-on="click" send-to="span" send-once
+      >Click me</div>
     <span receive-as="text" ></span>
     ```
 
