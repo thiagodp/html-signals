@@ -223,7 +223,7 @@ export function unregister(): void;
     <div
         data-url="https://jsonplaceholder.typicode.com/todos/1"
         send="data-url|click|#x|text"
-    >Click me</a>
+    >Click me</div>
 
     <p id="x"
         receive-as="fetch-json"

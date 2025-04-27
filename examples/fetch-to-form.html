@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch JSON on send</title>
+</head>
+<body>
+    <span
+        data-url="https://jsonplaceholder.typicode.com/todos/4"
+        send="data-url|domcontentloaded|input|fetch-json"
+        on-send-error="({message},target) => msg.innerText = message;"
+    ></span>
+
+    <form method="PUT" action="https://jsonplaceholder.typicode.com/todos" send-as="json" >
+        <input type="hidden" id="id" on-receive="toDo => id.value = toDo.id" />
+        <label for="title">Title:</label>
+        <input type="text" id="title" on-receive="toDo => title.value = toDo.title" required minlength="2" maxlength="50" />
+        <input type="checkbox" id="completed" on-receive="toDo => completed.checked = toDo.completed" />
+        <label for="completed">Completed</label>
+        <button>Send</button>
+    </form>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

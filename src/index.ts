@@ -78,11 +78,20 @@ function configureSender( root, el: Element, signal, options: Options ) {
     }
 
     if ( sendOn === 'domcontentloaded' ) {
-        sendOn = 'DOMContentLoaded';
-        el = ( options.document || options.window?.document ) as any;
-        if ( ! el ) {
+
+        const doc = ( options.document || options.window?.document ) as any;
+        if ( ! doc ) {
             throw new Error( 'Please define \'document\' or \'window\' in the options object' );
         }
+
+        sendOn = 'html-signal'; // Custom Event
+
+        // When the DOM is loaded, it will dispatch the custom event - that will be listened by the element
+        doc.addEventListener( 'DOMContentLoaded', () => {
+            const ev = new CustomEvent( 'html-signal' );
+            el.dispatchEvent( ev );
+        }, { signal } );
+
     }
 
     senderProps.sendOn = sendOn; // Just to sync values
@@ -109,6 +118,7 @@ function makeEventThatMakesTargetsToReceiveTheProperty( root, { sendProp, sendEl
 
 function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }: SenderProperties, options?: Options ) {
 
+    // console.log( 'sender,  sendProp, sendElement, sendAs, sendOn, sendTo ', sender,  sendProp, sendElement, sendAs, sendOn, sendTo );
     if ( sendElement ) {
 
         let element = root.querySelector( sendElement );
@@ -143,7 +153,7 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         if ( sendProp === 'innerText' || sendProp === 'text' ) {
             content = sender[ 'textContent' ];
         // Use "data-" attributes
-        } else if ( sendProp!.indexOf( 'data-' ) === 0 ) {
+        } else if ( 'getAttribute' in sender && sendProp!.indexOf( 'data-' ) === 0 ) {
             content = sender.getAttribute( sendProp );
         }
     }
