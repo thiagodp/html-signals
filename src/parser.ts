@@ -44,3 +44,8 @@ export function parseUnquotedJSON( jsonString: string ): object {
     // Parse the string
     return new Function(`return ${newJsonString}`)();
 }
+
+
+export function parseBoolean( text: string ): boolean {
+    return text === 'true' || text === '1';
+}

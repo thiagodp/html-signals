@@ -2,7 +2,7 @@ import { addAnyPolyfillToAbortSignalIfNeeded, createAbortController, destroyAbor
 import { registerSubmitEvent } from './form.js';
 import { makeFunction } from './function.js';
 import { extractHeaders } from './headers.js';
-import { parseUnquotedJSON } from './parser.js';
+import { parseBoolean, parseUnquotedJSON } from './parser.js';
 import { collectSenderProperties } from './properties.js';
 import { Options, SenderProperties } from './types.js';
 
@@ -10,7 +10,14 @@ import { Options, SenderProperties } from './types.js';
 let timeout: number = 5000;
 
 
-const allowedPropMap = { 'text': 'innerText', 'html': 'innerHTML' };
+const allowedPropMap = {
+    'text': 'innerText',
+    'html': 'innerHTML',
+    'number': 'innerText',
+    'int': 'innerText',
+    'float': 'innerText',
+    'boolean': 'innerText'
+};
 
 
 /**
@@ -147,6 +154,8 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         content = parseInt( content );
     } else if ( sendAs === 'float' ) {
         content = parseFloat( content );
+    } else if ( sendAs === 'boolean' ) {
+        content = parseBoolean( content );
     }
 
 
@@ -309,6 +318,10 @@ function receive( root, targetElement, content, options?: Options ) {
         content = parseInt( content );
     } else if ( receiveAs === 'float' && typeof content !== 'number' ) {
         content = parseFloat( content );
+    } else if ( receiveAs === 'boolean' ) {
+        console.log( 'as boolean' );
+        content = parseBoolean( content );
+        console.log( content, typeof content );
     }
 
     // receiveAs with fetch-*

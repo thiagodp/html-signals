@@ -12,7 +12,6 @@ import fetch from 'node-fetch';
 import fetchMock, { manageFetchMockGlobally } from '@fetch-mock/vitest';
 // manageFetchMockGlobally(); // optional
 
-
 const sleep = timeMS => new Promise( ( resolve ) => {
     setTimeout( resolve, timeMS );
 } );
@@ -41,7 +40,6 @@ describe( 'register', () => {
 
     afterAll( () => {
         // fetch.disableMocks();
-
         document = undefined;
         window = undefined;
     } );
@@ -49,6 +47,14 @@ describe( 'register', () => {
     beforeEach( () => {
         // fetch.resetMocks();
         fetchMock.removeRoutes();
+    } );
+
+
+    it( 'throws when root element, window and document are not defined', () => {
+
+        expect( () => {
+            register( undefined, { window: undefined, document: undefined } );
+        } ).toThrowError();
     } );
 
 
@@ -146,8 +152,6 @@ describe( 'register', () => {
         const targetTwo = document.querySelector( 'span' );
         expect( targetTwo.innerText ).toBe( 'Hello' );
     } );
-
-
 
 
     it( 'can send the source element text to the target element\'s text when the source is clicked', () => {
@@ -262,7 +266,7 @@ describe( 'register', () => {
     } );
 
 
-    describe.skip( 'send as number', () => {
+    describe.skip( 'send as with primitive, non-string values', () => {
 
         it( 'can send as number', () => {
 
@@ -323,6 +327,47 @@ describe( 'register', () => {
             const target = document.querySelector( '#out' );
             expect( target.value ).toBe( '1.5' );
         } );
+
+
+        it( 'can send as boolean with "true"', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="true"
+                    send="data-value|click|#out|boolean"
+                >Click Me</button>
+                <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#out' );
+            expect( target.value ).toBe( 'true' );
+        } );
+
+
+        it( 'can send as boolean with "1"', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="1"
+                    send="data-value|click|#out|boolean"
+                >Click Me</button>
+                <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+            `;
+
+            register( document.body, { window } );
+
+            const source = document.querySelector( 'button' );
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#out' );
+            expect( target.value ).toBe( 'true' );
+        } );
+
     } );
 
 
@@ -388,62 +433,69 @@ describe( 'register', () => {
 
     } );
 
-    it( 'can send a value to the browser history', () => {
+    describe( '$history', () => {
 
-        // data-url is empty to avoid security errors during the test
-        document.body.innerHTML = `
-            <div
+        it( 'can send a value to the browser history', () => {
+
+            // data-url is empty to avoid security errors during the test
+            document.body.innerHTML = `
+                <div
                 data-url=""
                 send-prop="data-url"
                 send-on="click"
                 send-to="$history"
-            >Foo</div>
-        `;
+                >Foo</div>
+            `;
 
-        register( document.body, { window } );
+            register( document.body, { window } );
 
-        expect( window.history.length ).toBe( 1 );
+            expect( window.history.length ).toBe( 1 );
 
-        const spy = vi.spyOn( window.history, 'pushState' );
+            const spy = vi.spyOn( window.history, 'pushState' );
 
-        const source = document.querySelector( 'div' );
-        const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
 
-        expect( spy ).toHaveBeenCalled();
+            expect( spy ).toHaveBeenCalled();
 
-        vi.restoreAllMocks()
+            vi.restoreAllMocks()
+        } );
     } );
 
 
-    it( 'can prevent the default behavior in a click', () => {
+    describe( 'prevent', () => {
 
-        // console.log( window.location.href );
+        it( 'can prevent the default behavior in a click', () => {
 
-        // data-url is empty to avoid security errors during the test
-        document.body.innerHTML = `
-            <a
-                href="/foo"
-                prevent
-                send-prop="href"
-                send-on="click"
-                send-to="div"
-            >Foo</a>
+            // console.log( window.location.href );
 
-            <div receive-as="text" ></div>
-        `;
+            // data-url is empty to avoid security errors during the test
+            document.body.innerHTML = `
+                <a
+                    href="/foo"
+                    prevent
+                    send-prop="href"
+                    send-on="click"
+                    send-to="div"
+                >Foo</a>
 
-        register( document.body, { window } );
+                <div receive-as="text" ></div>
+            `;
 
-        const source = document.querySelector( 'a' );
-        const event = new window.Event( 'click', {} );
-        source.dispatchEvent( event );
+            register( document.body, { window } );
 
-        expect( window.location.href ).not.toBe( '/foo' );
+            const source = document.querySelector( 'a' );
+            const event = new window.Event( 'click', {} );
+            source.dispatchEvent( event );
 
-        const target = document.querySelector( 'div' );
-        expect( target.innerText ).toBe( '/foo' );
-    } );
+            expect( window.location.href ).not.toBe( '/foo' );
+
+            const target = document.querySelector( 'div' );
+            expect( target.innerText ).toBe( '/foo' );
+        } );
+
+    });
 
 
     describe( 'fetch', () => {
@@ -963,43 +1015,36 @@ describe( 'register', () => {
     } );
 
 
-    it( 'can execute with send-on="domcontentloaded"', () => {
-        const element = '<p>Hello</p>';
-
-        document.body.innerHTML = `
-            ${element}
-
-            <div
-                send-element="p"
-                send-on="domcontentloaded"
-                send-to="#x"
-                send-as="element"
-            >Foo</div>
-
-            <div id="x"
-                on-receive="(el) => { el.textContent = 'World'; return el; }"
-                receive-as="element"
-            ></div>
-        `;
-
-        register( document.body, { document, window } );
-
-        document.dispatchEvent( new window.Event( 'DOMContentLoaded', {} ) );
-
-        const target = document.querySelector( '#x' );
-        expect( target.innerHTML ).toContain( 'World' );
-    } );
-
-
-    it( 'throws when root element, window and document are not defined', () => {
-
-        expect( () => {
-            register( undefined, { window: undefined, document: undefined } );
-        } ).toThrowError();
-    } );
-
-
     describe( 'send-on', () => {
+
+        it( 'can execute on "domcontentloaded"', () => {
+            const element = '<p>Hello</p>';
+
+            document.body.innerHTML = `
+                ${element}
+
+                <div
+                    send-element="p"
+                    send-on="domcontentloaded"
+                    send-to="#x"
+                    send-as="element"
+                >Foo</div>
+
+                <div id="x"
+                    on-receive="(el) => { el.textContent = 'World'; return el; }"
+                    receive-as="element"
+                ></div>
+            `;
+
+            register( document.body, { document, window } );
+
+            document.dispatchEvent( new window.Event( 'DOMContentLoaded', {} ) );
+
+            const target = document.querySelector( '#x' );
+            expect( target.innerHTML ).toContain( 'World' );
+        } );
+
+
 
         it( 'makes an element to forward its content when "send-on" is "receive"', () => {
 

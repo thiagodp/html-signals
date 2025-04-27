@@ -1,7 +1,7 @@
 TO-DO:
 
 - new data types to use in send-as and receive-as:
-  - boolean
+  OK- boolean
   - date
   - time
   - iso-date
@@ -15,7 +15,7 @@ OK- include fetchOptions in register()'s options
     -> send-to with more than one element receive all the properties, or the properties in order?
 - send-on with multiple events, in order
 
-- headers for all http-related properties
+OK- headers for all http-related properties
   - e.g.: headers="{ 'X-Foo': 'Bar' }"
 
 - on-receive with async function
@@ -35,14 +35,14 @@ OK- form - offer support to send-as="json" method="..."
 
 - on-mutate ?
 
-- http-post-json
-- http-put-json
-- http-patch-json
-- http-delete
-
-
 👇
 - send-on="viewport" (once)
 - send-on="visible" (once)
 - send-on="enabled" (once)
 
+in-viewport
+not-in-viewport
+visible
+not-visible
+
+in-viewport-always

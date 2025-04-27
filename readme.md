@@ -119,6 +119,7 @@ export function unregister(): void;
     - `"number"`
     - `"int"`
     - `"float"`
+    - `"boolean"` (admits `"true"` or `"1"` as `true`, and `false` otherwise)
     - `"json"` - values must contain unquoted or single-quoted properties only (HTML limitation)
     - `"fetch-html"` (html, css)
     - `"fetch-html-js"` (html, css, javascript)
@@ -171,6 +172,7 @@ export function unregister(): void;
     - `"number"`
     - `"int"`
     - `"float"`
+    - `"boolean"` (admits `"true"` or `"1"` as `true`, and `false` otherwise)
     - `"json"`
     - `"fetch-html"` (html, css)
     - `"fetch-html-js"` (html, css, javascript)

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Types</title>
+</head>
+<body>
+    <!-- Boolean ---------------------------------------------------------- -->
+    <h2>Boolean</h2>
+
+    <!-- Send as boolean with "true" -->
+    <button
+        data-value="true"
+        send="data-value|click|#outB1|boolean"
+    >Click Me</button>
+    <output id="outB1" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+
+    <!-- Send as boolean with "1" -->
+    <button
+        data-value="1"
+        send="data-value|click|#outB2|boolean"
+    >Click Me</button>
+    <output id="outB2" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+
+    <!-- Send as text, receive as boolean -->
+    <button
+        data-value="true"
+        send="data-value|click|#outB3|text"
+    >Click Me</button>
+    <output id="outB3" receive-as="boolean" >?</output>
+
+    <!-- Send as text, receive as boolean -->
+    <button
+        data-value="1"
+        send="data-value|click|#outB4|text"
+    >Click Me</button>
+    <output id="outB4" receive-as="boolean" >?</output>
+
+    <!-- Send as text, receive as boolean -->
+    <button
+        data-value="false"
+        send="data-value|click|#outB5|text"
+    >Click Me</button>
+    <output id="outB5" receive-as="boolean" >?</output>
+
+    <!-- ------------------------------------------------------------------ -->
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>
