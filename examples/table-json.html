@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table</title>
+    <style>
+        thead tr {
+            background-color: black;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: beige;
+        }
+    </style>
+</head>
+<body>
+    <span
+        data-url="https://jsonplaceholder.typicode.com/todos"
+        send="data-url|domcontentloaded|tbody|fetch-json"
+        on-send-error="({message},target,response) => msg.innerText = message + ' ' + response?.status"
+    ></span>
+
+    <h1>To-Do List</h1>
+    <div id="msg" ></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Completed?</th>
+            </tr>
+        </thead>
+        <tbody
+            on-receive="all => all.map( t => `<tr><td>${t.id}</td><td>${t.title}</td><td>${t.completed ? 'Yes' : 'No' }</td></tr>` ).join('')"
+            receive-as="html"
+        ></tbody>
+    </table>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>
