@@ -265,6 +265,48 @@ describe( 'register', () => {
     } );
 
 
+    it( 'can make a checkbox input to receive a boolean value as checked', () => {
+
+        document.body.innerHTML = `
+            <button
+                data-value="1"
+                send="data-value|click|input|boolean"
+            >Click Me</button>
+
+            <input type="checkbox" receive-as="checked" />
+        `;
+
+        register( document.body, { window: window as unknown as Window } );
+
+        const source = document.querySelector( 'button' );
+        source!.dispatchEvent( new window.Event( 'click', {} ) );
+
+        const target = document.querySelector( 'input' );
+        expect( target!.checked ).toBe( true );
+    } );
+
+
+    it( 'can make a checkbox input to receive a JSON object and extract a value as checked', () => {
+
+        document.body.innerHTML = `
+            <button
+                data-value="{'example': true}"
+                send="data-value|click|input|json"
+            >Click Me</button>
+
+            <input type="checkbox" receive-as="checked" on-receive="obj => obj.example" />
+        `;
+
+        register( document.body, { window: window as unknown as Window } );
+
+        const source = document.querySelector( 'button' );
+        source!.dispatchEvent( new window.Event( 'click', {} ) );
+
+        const target = document.querySelector( 'input' );
+        expect( target!.checked ).toBe( true );
+    } );
+
+
     describe.skip( 'send as with primitive, non-string values', () => {
 
         it( 'can send as number', () => {

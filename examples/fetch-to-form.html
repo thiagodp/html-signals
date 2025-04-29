@@ -23,10 +23,13 @@
     <hr />
 
     <form method="PUT" action="https://jsonplaceholder.typicode.com/todos" send-as="json" >
-        <input type="hidden" id="id" on-receive="toDo => id.value = toDo.id" />
+        <input type="hidden" name="id"     receive-as="value" on-receive="toDo => toDo.id" />
+        <input type="hidden" name="userId" receive-as="value" on-receive="toDo => toDo.userId" />
         <label for="title">Title:</label>
-        <input type="text" id="title" on-receive="toDo => title.value = toDo.title" required minlength="2" maxlength="50" />
-        <input type="checkbox" id="completed" on-receive="toDo => completed.checked = toDo.completed" />
+        <input type="text" id="title" name="title" required minlength="2" maxlength="50"
+            receive-as="value" on-receive="toDo => toDo.title"  />
+        <input type="checkbox" id="completed" name="completed"
+            receive-as="checked" on-receive="toDo => console.log( toDo ) || toDo.completed; " />
         <label for="completed">Completed</label>
         <button>Send</button>
         <div id="msg" ></div>

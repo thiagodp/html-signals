@@ -22,6 +22,35 @@ const allowedPropMap = {
     'boolean': 'innerText'
 };
 
+const booleanProps = [
+    'allowfullscreen',
+    'async',
+    'autofocus',
+    'autoplay',
+    'checked',
+    'controls',
+    'default',
+    'defer',
+    'disabled',
+    'formnovalidate',
+    'inert',
+    'ismap',
+    'itemscope',
+    'loop',
+    'multiple',
+    'muted',
+    'nomodule',
+    'novalidate',
+    'open',
+    'playsinline',
+    'readonly',
+    'required',
+    'reversed',
+    'selected',
+    'shadowrootclonable',
+    'shadowrootdelegatesfocus',
+    'shadowrootserializable'
+];
 
 /**
  * Unregister the new behavior for your HTML elements, and cancel all ongoing fetch events eventually started by them.
@@ -156,7 +185,7 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         if ( sendProp === 'innerText' || sendProp === 'text' ) {
             content = sender[ 'textContent' ];
         // Use "data-" attributes
-        } else if ( 'getAttribute' in sender && sendProp!.indexOf( 'data-' ) === 0 ) {
+        } else if ( 'getAttribute' in sender ) {
             content = sender.getAttribute( sendProp );
         }
     }
@@ -387,7 +416,9 @@ function receive( root, targetElement, content, options?: Options ) {
     }
 
     if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
-        targetElement[ receiveAs ] = options.sanitizer( content );
+        targetElement[ receiveAs ] = options.sanitizer( content.toString() );
+    } else if ( booleanProps.includes( receiveAs ) ) {
+        targetElement[ receiveAs ] = !!content;
     } else {
         targetElement[ receiveAs ] = content.toString();
     }
