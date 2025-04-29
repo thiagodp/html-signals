@@ -233,7 +233,7 @@ export function unregister(): void;
 
 ### Forms
 
-1. A **form** `method` can use `PUT`, `PATCH` and `DELETE` (version `0.11.0`+).
+1. A form `method` can use `PUT`, `PATCH` and `DELETE` (version `0.11.0`+).
     - Currently, there must be an input element named `id` to store that value that will be dynamically added to the URL in `action`. That `id` element can be set as `hidden`. Example:
     ```html
     <!-- This will send an HTTP `DELETE` to `/foo/10` -->
@@ -257,7 +257,7 @@ export function unregister(): void;
     ```
 
 
-2. A **form** can use the property `headers` with additional HTTP headers with single-quoted JSON (version `0.13.0`+). Example:
+2. A `form` can use the property `headers` with additional HTTP headers with single-quoted JSON (version `0.13.0`+). Example:
     ```html
     <!-- This will send a `PUT` to `/foo/10` with the additional headers `"X-Foo"` with `"Hello"` and `"X-Bar"` with `"World"` -->
     <form method="PUT" action="/foo" headers="{'X-Foo':'Hello', 'X-Bar':'World'}" >
@@ -268,6 +268,34 @@ export function unregister(): void;
     </form>
     ```
     - Additional headers can subscribe default headers, if desired. Example: `headers="{'Content-Type': 'text/plain'}"`.
+
+
+3. When a form uses `send-as="json"`, its input elements (`input`, `textarea`, `select`, etc.) can also use `send-as` to extract their values with a different data type.
+  - Currently supported types are `boolean`, `int`, `float`, and `number`.
+  - Example:
+    ```html
+    <!-- It will send a PUT request with a JSON object like
+        { "id": 10, "description": "Samurai sword", "quantity": 3, "price": 1000.00, "imported": true }
+    -->
+    <form method="PUT" action="/products" send-as="json" >
+      <input type="hidden" name="id" value="10" send-as="int" /> <!-- Id will be sent with the object! -->
+
+      <label for="description" >Description:</label>
+      <input type="text" name="description" id="description" required minlength="2" maxlength="100" />
+
+      <label for="quantity" >Quantity:</label>
+      <input type="number" name="quantity" id="quantity" minvalue="0" maxvalue="1000" send-as="int" />
+
+      <label for="price" >Price:</label>
+      <input type="number" name="price" id="price" minvalue="0" maxvalue="1000000" send-as="float" />
+
+      <input type="checkbox" name="imported" id="imported" send-as="boolean" />
+      <label for="imported" >Imported product</label>
+
+      <button type="submit" >Send</button>
+    </form>
+    ```
+  - **When an input named `id` has `send-as` defined, it will be sent with the HTTP request.**
 
 
 ### Additional properties

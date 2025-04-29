@@ -1,5 +1,6 @@
 import { makeFunction } from './function.js';
 import { addHeaders, extractHeaders } from './headers.js';
+import { parseBoolean } from './parser.js';
 import { Options, SenderProperties } from './types.js';
 
 
@@ -26,15 +27,41 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
         const onSendError = form.getAttribute( 'on-send-error' ) || undefined;
         const onSendErrorFn: Function | undefined = makeFunction( onSendError );
 
+        // Adjust the form data on extraction - for strings only
+        // form.addEventListener( 'formdata', adjustFormData, { signal } );
 
         // Convert form data to object if it's json
         const formData = new FormData( form );
         const obj = {};
         const isJson = props.sendAs === 'json';
         const isMultipart = props.sendAs === 'multipart';
+
         if ( isJson ) {
             for ( const [ key, value ] of formData.entries() ) {
                 obj[ key ] = value.valueOf();
+
+                // Evaluate "send-as"
+                const element = form.querySelector( `[name="${key}"]` );
+                const sendAs = element?.getAttribute( 'send-as' );
+                if ( ! sendAs ) {
+                    continue;
+                }
+
+                // Convert if needed
+                if ( sendAs === 'number' || sendAs === 'float' || sendAs == 'int' ) {
+                    const newValue = Number( obj[ key ] );
+                    if ( ! isNaN( newValue ) ) {
+                        obj[ key ] = newValue;
+                    }
+                } else if ( sendAs === 'boolean' ) {
+                    // Evaluate the element
+                    if ( element.tagName === 'INPUT' && element.getAttribute( 'type' ) === 'checkbox' ) {
+                        obj[ key ] = element.checked;
+                    } else {
+                        obj[ key ] = parseBoolean( obj[ key ] );
+                    }
+                }
+                // TODO: expand the supported types
             }
         }
 
@@ -60,13 +87,20 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
         const idField = 'id';
         let id;
         if ( shouldContainIdInTheURL ) {
-            // TODO: make an option to keep the id field from the JSON on PUT and PATCH
+
+            const idElement = form.querySelector( `[name="${idField}"]` );
+            const isSendAsDefined = idElement && idElement.getAttribute( 'send-as' ) !== null;
+
             if ( isJson ) {
                 id = obj[ idField ];
-                delete obj[ idField ] ;
+                if ( ! isSendAsDefined ) {
+                    delete obj[ idField ] ;
+                }
             } else {
                 id = formData.get( idField );
-                formData.delete( idField );
+                if ( ! isSendAsDefined ) {
+                    formData.delete( idField );
+                }
             }
             url += url.endsWith( '/' ) ? id : '/' + id;
         }
@@ -126,3 +160,19 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
 
     el.addEventListener( props.sendOn!, sendFormData );
 }
+
+
+// function adjustFormData( event: FormDataEvent ) {
+//     const form = event.target as HTMLFormElement;
+//     const formData = event.formData;
+//     const elements = form.elements;
+//     for ( const e of elements ) {
+//         const sendAs = e.getAttribute( 'send-as' );
+//         if ( ! sendAs ) {
+//             continue;
+//         }
+//         formData.set( e.getAttribute( 'name' )!, '' ) // Only strings, no it does not make sense to use it
+//     }
+
+
+// }
