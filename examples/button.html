@@ -6,10 +6,8 @@
     <title>Example</title>
 </head>
 <body>
-    <button
-        data-value="1"
-        send="data-value|click|#out|number"
-    >Click Me</button>
+    <button data-value="1" send="data-value|click|#out|number" >Click Me</button>
+
     <output id="out" on-receive="v => Number( out.value ) + v" >0</output>
 
     <script type="module" >
