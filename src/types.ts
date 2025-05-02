@@ -5,8 +5,10 @@ type SanitizerFunction = ( content: string ) => string;
 
 type GenericFetch = ( input: any, init?: any ) => Promise< any >;
 
+export type Win = typeof globalThis & Window;
+
 export type Options = {
-    window?: typeof globalThis | Window,
+    window?: Win,
     document?: Document,
     fetch?: typeof globalThis.fetch | GenericFetch,
     sanitizer?: SanitizerFunction,

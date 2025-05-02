@@ -2,15 +2,15 @@ import { makeFunction } from './function.js';
 import { addHeaders, extractHeaders } from './headers.js';
 import { parseBoolean } from './parser.js';
 import { Options, SenderProperties } from './types.js';
-
+import { EVENT_FETCH_SUCCESS } from './events.js';
 
 export function registerSubmitEvent( el: Element, signal, props: SenderProperties, options: Options, timeout: number ) {
 
-    const sendFormData = async ( event ) => {
+    const sendFormData = event => {
 
         event.preventDefault();
 
-        const form = event.target;
+        const form = event.target as HTMLFormElement;
 
         // Validate
         const isOK = form.reportValidity();
@@ -31,7 +31,7 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
         // form.addEventListener( 'formdata', adjustFormData, { signal } );
 
         // Convert form data to object if it's json
-        const formData = new FormData( form );
+        const formData = new options.window!.FormData( form );
         const obj = {};
         const isJson = props.sendAs === 'json';
         const isMultipart = props.sendAs === 'multipart';
@@ -41,7 +41,7 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
                 obj[ key ] = value.valueOf();
 
                 // Evaluate "send-as"
-                const element = form.querySelector( `[name="${key}"]` );
+                const element = form.querySelector( `[name="${key}"]` )!;
                 const sendAs = element?.getAttribute( 'send-as' );
                 if ( ! sendAs ) {
                     continue;
@@ -56,7 +56,7 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
                 } else if ( sendAs === 'boolean' ) {
                     // Evaluate the element
                     if ( element.tagName === 'INPUT' && element.getAttribute( 'type' ) === 'checkbox' ) {
-                        obj[ key ] = element.checked;
+                        obj[ key ] = ( element as HTMLInputElement ).checked;
                     } else {
                         obj[ key ] = parseBoolean( obj[ key ] );
                     }
@@ -117,7 +117,7 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
         addHeaders( userHeaders, httpHeaders );
 
         // Fetch
-        // TODO: define option to retrieve content when the response is received
+        // TODO: define option to retrieve content when the response is received - event?
 
         const fetchOptions: RequestInit = {
             method,
@@ -149,6 +149,11 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
                 return response;
                 // return isJSON ? response.json() : response.text();
             } )
+            .then( response => {
+                const ev = new CustomEvent( EVENT_FETCH_SUCCESS );
+                form.dispatchEvent( ev );
+                return response;
+            } )
             .catch( error => {
                 if ( onSendErrorFn ) {
                     onSendErrorFn( error, form, outerResponse );
@@ -158,7 +163,7 @@ export function registerSubmitEvent( el: Element, signal, props: SenderPropertie
             } );
     };
 
-    el.addEventListener( props.sendOn!, sendFormData );
+    el.addEventListener( props.sendOn!, sendFormData, { signal } );
 }
 
 

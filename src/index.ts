@@ -4,14 +4,14 @@ import { makeFunction } from './function.js';
 import { extractHeaders } from './headers.js';
 import { parseBoolean, parseUnquotedJSON } from './parser.js';
 import { collectSenderProperties } from './properties.js';
-import { Options, SenderProperties } from './types.js';
+import { Options, SenderProperties, Win } from './types.js';
+import { EVENT_DOM_LOADED, EVENT_FETCH_SUCCESS } from './events.js';
 
+// FETCH OPTIONS
 
-export const EVENT_NAME = 'html-signal';
-
-// Fetch timeout
 let timeout: number = 5000;
 
+// PROPERTIES
 
 const allowedPropMap = {
     'text': 'innerText',
@@ -52,6 +52,7 @@ const booleanProps = [
     'shadowrootserializable'
 ];
 
+
 /**
  * Unregister the new behavior for your HTML elements, and cancel all ongoing fetch events eventually started by them.
  */
@@ -70,7 +71,7 @@ export function unregister(): void {
 export function register( root?: HTMLElement, options?: Options ): void {
 
     options = options || {};
-    options!.window = options?.window || globalThis;
+    options!.window = ( options?.window || globalThis ) as Win;
     options!.fetch = options?.fetch || globalThis.fetch.bind( globalThis );
 
     addAnyPolyfillToAbortSignalIfNeeded( options!.window );
@@ -116,11 +117,11 @@ function configureSender( root, el: Element, signal, options: Options ) {
             throw new Error( 'Please define \'document\' or \'window\' in the options object' );
         }
 
-        sendOn = 'html-signal'; // Custom Event
+        sendOn = EVENT_DOM_LOADED; // Custom Event
 
         // When the DOM is loaded, it will dispatch the custom event - that will be listened by the element
         doc.addEventListener( 'DOMContentLoaded', () => {
-            const ev = new CustomEvent( 'html-signal' );
+            const ev = new CustomEvent( EVENT_DOM_LOADED );
             el.dispatchEvent( ev );
         }, { signal } );
 
@@ -251,10 +252,15 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
                         options.window.history.pushState( null, '', content );
                     }
 
-                    return;
+                    return data;
                 }
 
                 return handleHistoryAndTargets( root, data, sendTo, { before: addToHistoryBeforeElements, after: addToHistoryAfterElements }, options );
+            } )
+            .then( content => {
+                // Useful for testing purposes
+                const ev = new options.window!.CustomEvent( EVENT_FETCH_SUCCESS, { detail: { content } } );
+                sender.dispatchEvent( ev );
             } )
             .catch( error => {
                 if ( onSendErrorFn ) {
@@ -286,6 +292,8 @@ function handleHistoryAndTargets( root, content, targets, { before, after }, opt
     if ( after && options?.window ) {
         options.window.history.pushState( null, '', content );
     }
+
+    return content;
 }
 
 
@@ -395,7 +403,7 @@ function receive( root, targetElement, content, options?: Options ) {
 
                 if ( receiveAs === 'fetch-html-js' ) {
                     sendAsDOMToTarget( data, targetElement );
-                    return;
+                    return data;
                 }
 
                 if ( typeof options?.sanitizer === 'function' ) {
@@ -405,6 +413,11 @@ function receive( root, targetElement, content, options?: Options ) {
                 }
 
                 return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, targetElement[ prop ] , options );
+            } )
+            .then( content => {
+                // Useful for testing
+                const ev = new options.window!.CustomEvent( EVENT_DOM_LOADED, { detail: { content } } );
+                targetElement.dispatchEvent( ev );
             } )
             .catch( error => {
                 if ( onReceiveErrorFn ) {

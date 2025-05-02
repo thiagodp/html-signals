@@ -3,8 +3,11 @@ import { JSDOM } from 'jsdom';
 import fetch from 'node-fetch';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { EVENT_NAME, register } from '../src';
+import { register } from '../src';
+import { EVENT_DOM_LOADED, EVENT_FETCH_SUCCESS } from '../src/events';
+
 import { DOMWindow } from 'jsdom';
+import { Win } from '../src/types';
 
 // import createFetchMock from 'vitest-fetch-mock';
 // const fetch = createFetchMock(vi);
@@ -15,6 +18,10 @@ import { DOMWindow } from 'jsdom';
 
 const sleep = timeMS => new Promise( ( resolve ) => {
     setTimeout( resolve, timeMS );
+} );
+
+const waitForEvent = ( element: Element, eventName ) => new Promise( ( resolve ) => {
+    element.addEventListener( eventName, resolve, { once: true } );
 } );
 
 
@@ -71,7 +78,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'input' );
         source!.value = 'Hello';
@@ -102,7 +109,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'input' );
         source!.value = 'Hello';
@@ -137,7 +144,7 @@ describe( 'register', () => {
             ></span>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'input' );
         source!.value = 'Hello';
@@ -169,7 +176,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -196,7 +203,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -224,7 +231,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -254,7 +261,7 @@ describe( 'register', () => {
             ></div>
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'div' );
         const event = new window.Event( 'click', {} );
@@ -276,7 +283,7 @@ describe( 'register', () => {
             <input type="checkbox" receive-as="checked" />
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'button' );
         source!.dispatchEvent( new window.Event( 'click', {} ) );
@@ -297,7 +304,7 @@ describe( 'register', () => {
             <input type="checkbox" receive-as="checked" on-receive="obj => obj.example" />
         `;
 
-        register( document.body, { window: window as unknown as Window } );
+        register( document.body, { window: window as unknown as Win } );
 
         const source = document.querySelector( 'button' );
         source!.dispatchEvent( new window.Event( 'click', {} ) );
@@ -320,13 +327,13 @@ describe( 'register', () => {
             `;
                 // <output id="out" receive-as="value" on-receive="v => Number( out.value ) + v" >0</output>
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( 'output' );
-            expect( target!.value ).toBe( '1' );
+            const target = document.querySelector( 'output' )!;
+            expect( target.value ).toBe( '1' );
         } );
 
 
@@ -340,12 +347,12 @@ describe( 'register', () => {
                 <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' );
+            const target = document.querySelector( '#out' )!;
             expect( ( target as HTMLInputElement ).value ).toBe( '1' );
         } );
 
@@ -360,12 +367,12 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => Number( out.value ) + v" >0</output>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' );
+            const target = document.querySelector( '#out' )!;
             expect( ( target as HTMLInputElement ).value ).toBe( '1.5' );
         } );
 
@@ -380,12 +387,12 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' );
+            const target = document.querySelector( '#out' )!;
             expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
         } );
 
@@ -400,10 +407,10 @@ describe( 'register', () => {
                 <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
             const target = document.querySelector( '#out' );
             expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
@@ -431,15 +438,14 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            expect( source!.getAttribute( 'data-id' ) ).toBe( '{ value: 10 }' );
+            expect( source.getAttribute( 'data-id' ) ).toBe( '{ value: 10 }' );
 
-            const target = document.querySelector( '#foo' );
+            const target = document.querySelector( '#foo' )!;
             expect( ( target as HTMLElement ).innerText ).toBe( '10' );
         } );
 
@@ -461,13 +467,12 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#foo' );
+            const target = document.querySelector( '#foo' )!;
             expect( ( target as HTMLElement ).innerText ).toBe( '10' );
         } );
 
@@ -488,7 +493,7 @@ describe( 'register', () => {
                 >Foo</div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             expect( window!.history.length ).toBe( 1 );
 
@@ -524,7 +529,7 @@ describe( 'register', () => {
                 <div receive-as="text" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'a' );
             const event = new window.Event( 'click', {} );
@@ -557,22 +562,20 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch, window: window as unknown as Window } );
+            register( document.body, { fetch, window: window as unknown as Win } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https:/google.com', '<html></html>' );
 
             const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            source!.dispatchEvent( new window.Event( 'click', {} ) );
 
-            await sleep( 1000 );
-            // await sleep( 1 );
+            // await sleep( 1000 );
 
-            const target = document.querySelector( '#x' );
+            const target = document.querySelector( '#x' )!;
+            await waitForEvent( target, EVENT_DOM_LOADED );
+
             expect( target!.innerHTML ).toContain( 'html' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
         } );
 
 
@@ -594,22 +597,18 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { fetch, window: window as unknown as Window } );
+            register( document.body, { fetch, window: window as unknown as Win } );
 
             // fetch.mockResponseOnce( '<html></html>' );
-            // fetchMock.mockGlobal().get( 'https://google.com', '<html></html>' );
+            fetchMock.mockGlobal().get( 'https://google.com', '<html></html>' );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            await sleep( 1000 );
-            // await sleep( 1 );
+            await waitForEvent( source, EVENT_FETCH_SUCCESS );
 
-            const target = document.querySelector( '#x' );
-            expect( target!.innerHTML ).toContain( 'html' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
+            const target = document.querySelector( '#x' )!;
+            expect( target.innerHTML ).toContain( 'html' );
         } );
 
 
@@ -631,7 +630,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const obj = {
                 "userId": 1,
@@ -643,17 +642,14 @@ describe( 'register', () => {
             // fetch.mockResponseOnce(  objStr );
             fetchMock.mockGlobal().get( 'https://jsonplaceholder.typicode.com/todos/1', obj );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            // await sleep( 1000 );
-            await sleep( 1 );
+            // await sleep( 1 );
+            await waitForEvent( source, EVENT_FETCH_SUCCESS );
 
-            const target = document.querySelector( '#x' );
+            const target = document.querySelector( '#x' )!;
             expect( ( target as HTMLElement ).innerText ).toContain( 'delectus aut autem' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
         } );
 
 
@@ -674,7 +670,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const obj = {
                 "userId": 1,
@@ -686,17 +682,13 @@ describe( 'register', () => {
             // fetch.mockResponseOnce( objStr );
             fetchMock.mockGlobal().get( 'https://jsonplaceholder.typicode.com/todos/1', obj );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            // await sleep( 1000 );
             await sleep( 1 );
 
-            const target = document.querySelector( '#x' );
+            const target = document.querySelector( '#x' )!;
             expect( ( target as HTMLElement ).innerText ).toContain( 'delectus aut autem' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
         } );
 
 
@@ -718,23 +710,18 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            // register( document.body );
-            register( document.body, { fetch, window: window as unknown as Window } );
+            register( document.body, { fetch, window: window as unknown as Win } );
 
             // fetch.mockResponseOnce( '<html></html>' );
-            // fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
+            fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            // await sleep( 1 );
-            await sleep( 1000 );
+            await waitForEvent( source, EVENT_FETCH_SUCCESS );
 
-            const target = document.querySelector( '#x' );
-            expect( target!.innerHTML ).toContain( 'html' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
+            const target = document.querySelector( '#x' )!;
+            expect( target.innerHTML ).toContain( 'html' );
         } );
 
 
@@ -755,22 +742,18 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             // fetch.mockResponseOnce( '<html></html>' );
             fetchMock.mockGlobal().get( 'https://wikipedia.org', '<html></html>' );
 
-            const source = document.querySelector( 'div' );
-            const event = new window.Event( 'click', {} );
-            source!.dispatchEvent( event );
+            const source = document.querySelector( 'div' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            // await sleep( 1000 );
             await sleep( 1 );
 
             const target = document.querySelector( '#x' );
             expect( ( target as HTMLElement ).innerText ).toContain( 'html' );
-
-            // expect( fetch.requests().length ).toEqual( 1 );
         } );
 
     } );
@@ -795,7 +778,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -823,7 +806,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -856,7 +839,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -889,7 +872,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -918,7 +901,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element-clone" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -952,7 +935,7 @@ describe( 'register', () => {
             `;
 
             expect( () => {
-                register( document.body, { window: window as unknown as Window } );
+                register( document.body, { window: window as unknown as Win } );
             } ).toThrowError();
         } );
 
@@ -978,7 +961,7 @@ describe( 'register', () => {
                     <div id="x" receive-as="element" ></div>
                 `;
 
-                register( document.body, { window: window as unknown as Window }  );
+                register( document.body, { window: window as unknown as Win }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
@@ -1009,7 +992,7 @@ describe( 'register', () => {
                     <div id="x" receive-as="element-clone" ></div>
                 `;
 
-                register( document.body, { window: window as unknown as Window }  );
+                register( document.body, { window: window as unknown as Win }  );
 
                 const source = document.querySelector( 'div' );
                 const event = new window.Event( 'click', {} );
@@ -1043,7 +1026,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -1074,10 +1057,10 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { document, window: window as unknown as Window } );
+            register( document.body, { document, window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' )!;
-            source.dispatchEvent( new window.Event( EVENT_NAME) );
+            source.dispatchEvent( new window.Event( EVENT_DOM_LOADED) );
 
             const target = document.querySelector( '#x' );
             expect( target!.textContent ).toContain( 'Hello' );
@@ -1106,7 +1089,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window: window as unknown as Window } );
+            register( document.body, { document, window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -1142,7 +1125,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window: window as unknown as Window  } );
+            register( document.body, { document, window: window as unknown as Win  } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -1179,7 +1162,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { document, window: window as unknown as Window } );
+            register( document.body, { document, window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -1193,36 +1176,31 @@ describe( 'register', () => {
         } );
 
 
-        it.skip( 'throws an exception when either "send-prop" or "send-element" is not defined', async () => {
+        it( 'throws an exception when either "send-prop" or "send-element" is not defined', async () => {
 
-            const run = async () => {
+            document.body.innerHTML = `
+                <div
+                    send-prop="text"
+                    send-on="click"
+                    send-to="#x"
+                >Foo</div>
 
-                document.body.innerHTML = `
-                    <div
-                        send-prop="text"
-                        send-on="click"
-                        send-to="#x"
-                    >Foo</div>
+                <div id="x"
+                    receive-as="text"
+                    send-on="receive"
+                    send-to="#y"
+                ></div>
 
-                    <div id="x"
-                        receive-as="text"
-                        send-on="receive"
-                        send-to="#y"
-                    ></div>
+                <div id="y"
+                    receive-as="text"
+                ></div>
+            `;
 
-                    <div id="y"
-                        receive-as="text"
-                    ></div>
-                `;
-
-                register( document.body, { document, window: window as unknown as Window } );
-
-                const source = document.querySelector( 'div' );
-                const event = new window.Event( 'click', {} );
-                source!.dispatchEvent( event );
-            };
-
-            expect( async () => await Promise.all( [ run, sleep( 1000 ) ] ) ).toThrow();
+            expect( () => {
+                register( document.body, { document, window: window as unknown as Win } );
+                const source = document.querySelector( 'div' )!;
+                source.dispatchEvent( new window.Event( 'click', {} ) );
+            } ).toThrow();
         } );
 
     } );
@@ -1242,7 +1220,7 @@ describe( 'register', () => {
                 ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'input' );
             source!.value = 'Hello';
@@ -1269,7 +1247,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="element" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const event = new window.Event( 'click', {} );
@@ -1291,7 +1269,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
@@ -1309,7 +1287,7 @@ describe( 'register', () => {
     } );
 
 
-    describe.skip( 'form', () => {
+    describe( 'form', () => {
 
         it( 'can send data as JSON when "send-as" is declared accordingly', async () => {
 
@@ -1322,16 +1300,14 @@ describe( 'register', () => {
                 </form>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             fetchMock.mockGlobal();
 
-            const source = document.querySelector( 'button' );
-            source!.dispatchEvent( new window.Event( 'click', {} ) );
+            const source = document.querySelector( 'form' )!;
+            source.dispatchEvent( new window.Event( 'submit', {} ) );
 
-            await sleep( 1000 );
-
-            expect( fetchMock ).toHavePosted( url, { body: { name: 'Bob' } } );
+            expect( fetchMock ).toHavePosted( url, { body: { name: 'Bob' }, response: { status: 200 } } );
         } );
 
     } );
@@ -1353,7 +1329,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
@@ -1381,7 +1357,7 @@ describe( 'register', () => {
                 <div id="x" receive-as="text" ></div>
             `;
 
-            register( document.body, { window: window as unknown as Window } );
+            register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'div' );
             const target = document.querySelector( '#x' );
