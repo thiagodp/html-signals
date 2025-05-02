@@ -314,26 +314,30 @@ describe( 'register', () => {
     } );
 
 
-    describe.skip( 'send as with primitive, non-string values', () => {
+    describe( 'send as with primitive, non-string values', () => {
 
         it( 'can send as number', () => {
 
             document.body.innerHTML = `
                 <button
                     data-value="1"
-                    send="data-value|click|#out|number"
+                    send="data-value|click|output|number"
                 >Click Me</button>
-                <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
             `;
-                // <output id="out" receive-as="value" on-receive="v => Number( out.value ) + v" >0</output>
 
             register( document.body, { window: window as unknown as Win } );
 
             const source = document.querySelector( 'button' )!;
             source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( 'output' )!;
-            expect( target.value ).toBe( '1' );
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( '1' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'number' );
         } );
 
 
@@ -342,9 +346,11 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <button
                     data-value="1.5"
-                    send="data-value|click|#out|int"
+                    send="data-value|click|output|int"
                 >Click Me</button>
-                <output id="out" on-receive="( v, { document } ) => Number( document.querySelector( '#out' ).value ) + v" >0</output>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
             `;
 
             register( document.body, { window: window as unknown as Win } );
@@ -352,8 +358,11 @@ describe( 'register', () => {
             const source = document.querySelector( 'button' )!;
             source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' )!;
-            expect( ( target as HTMLInputElement ).value ).toBe( '1' );
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( '1' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'number' );
         } );
 
 
@@ -362,9 +371,11 @@ describe( 'register', () => {
             document.body.innerHTML = `
                 <button
                     data-value="1.5"
-                    send="data-value|click|#out|float"
+                    send="data-value|click|output|float"
                 >Click Me</button>
-                <output id="out" on-receive="v => Number( out.value ) + v" >0</output>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
             `;
 
             register( document.body, { window: window as unknown as Win } );
@@ -372,19 +383,24 @@ describe( 'register', () => {
             const source = document.querySelector( 'button' )!;
             source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' )!;
-            expect( ( target as HTMLInputElement ).value ).toBe( '1.5' );
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( '1.5' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'number' );
         } );
 
 
-        it( 'can send as boolean with "true"', () => {
+        it( 'can send as boolean true with "true"', () => {
 
             document.body.innerHTML = `
                 <button
                     data-value="true"
-                    send="data-value|click|#out|boolean"
+                    send="data-value|click|output|boolean"
                 >Click Me</button>
-                <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
             `;
 
             register( document.body, { window: window as unknown as Win } );
@@ -392,19 +408,24 @@ describe( 'register', () => {
             const source = document.querySelector( 'button' )!;
             source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' )!;
-            expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( 'true' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'boolean' );
         } );
 
 
-        it( 'can send as boolean with "1"', () => {
+        it( 'can send as boolean true with "1"', () => {
 
             document.body.innerHTML = `
                 <button
                     data-value="1"
-                    send="data-value|click|#out|boolean"
+                    send="data-value|click|output|boolean"
                 >Click Me</button>
-                <output id="out" on-receive="v => v === true ? 'true' : 'false'" >?</output>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
             `;
 
             register( document.body, { window: window as unknown as Win } );
@@ -412,8 +433,60 @@ describe( 'register', () => {
             const source = document.querySelector( 'button' )!;
             source.dispatchEvent( new window.Event( 'click', {} ) );
 
-            const target = document.querySelector( '#out' );
-            expect( ( target as HTMLInputElement ).value ).toBe( 'true' );
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( 'true' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'boolean' );
+        } );
+
+        it( 'can send as boolean false with "false"', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="false"
+                    send="data-value|click|output|boolean"
+                >Click Me</button>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
+            `;
+
+            register( document.body, { window: window as unknown as Win } );
+
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( 'false' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'boolean' );
+        } );
+
+
+        it( 'can send as boolean false with "false"', () => {
+
+            document.body.innerHTML = `
+                <button
+                    data-value="0"
+                    send="data-value|click|output|boolean"
+                >Click Me</button>
+
+                <output id="o1" >0</output>
+                <output id="o2" on-receive="v => typeof v" >?</output>
+            `;
+
+            register( document.body, { window: window as unknown as Win } );
+
+            const source = document.querySelector( 'button' )!;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#o1' )!;
+            expect( ( target as HTMLOutputElement ).innerText ).toBe( 'false' );
+
+            const target2 = document.querySelector( '#o2' )!;
+            expect( ( target2 as HTMLOutputElement ).innerText ).toBe( 'boolean' );
         } );
 
     } );
