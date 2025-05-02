@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Blob Content</title>
+</head>
+<body>
+    <button
+        data-url="/examples/resources/image.jpg"
+        send="data-url|click|img|fetch-blob"
+        on-send-error="(e,target) => console.log( e, target )"
+    >Load Image</button>
+    <br />
+    <img receive-as="image" alt="Cat" />
+
+    <br />
+    <button
+        data-url="/examples/resources/audio.mp3"
+        send="data-url|click|#a1 source|fetch-blob"
+        on-send-error="(e,target) => console.log( e, target )"
+    >Load Audio</button>
+    <br />
+    <audio id="a1" controls >
+        <source type="audio/mp3" receive-as="audio" />
+    </audio>
+
+    <br />
+    <button
+        data-url="/examples/resources/video.mp4"
+        send="data-url|click|#v1 source|fetch-blob"
+        on-send-error="(e,target) => console.log( e, target )"
+    >Load Video</button>
+    <br />
+    <video id="v1" controls >
+        <source type="video/mp4" receive-as="video" />
+    </video>
+
+    <br />
+    <button
+        data-url="/examples/resources/document.pdf"
+        send="data-url|click|#d1|fetch-blob"
+        on-send-error="(e,target) => console.log( e, target )"
+    >Load PDF</button>
+    <br />
+    <embed id="d1" receive-as="blob" type="application/pdf" title="PDF Viewer" width="50%" height="50%" ></embed>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

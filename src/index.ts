@@ -209,11 +209,11 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
     const onSendErrorFn: Function | undefined = makeFunction( onSendError );
 
     // fetch-*
-    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( sendAs! )  && options?.fetch ) {
+    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text', 'fetch-blob' ].includes( sendAs! )
+        && options?.fetch ) {
 
         const isJSON = sendAs === 'fetch-json';
-        const isHTML = sendAs === 'fetch-html';
-        const prop = isHTML ? 'innerHTML' : 'innerText';
+        const isBlob = sendAs === 'fetch-blob';
 
         const fetchOptions: RequestInit = {
             signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
@@ -230,7 +230,10 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from "' + content + '". Status: ' + response.status );
                 }
-                return isJSON ? response.json() : response.text();
+                if ( isJSON ) {
+                    return response.json();
+                }
+                return isBlob ? response.blob() : response.text();
             } )
             .then( data => {
 
@@ -265,8 +268,12 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
             .catch( error => {
                 if ( onSendErrorFn ) {
                     onSendErrorFn( error, sender );
+                } else if ( 'innerText' in sender ) {
+                    sender.innerText = error.message;
+                } else if ( 'textContent' in sender ) {
+                    sender.textContent = error.message;
                 } else {
-                    sender[ prop ] = error.message;
+                    console.error( error.message );
                 }
             } );
     } else {
@@ -298,13 +305,6 @@ function handleHistoryAndTargets( root, content, targets, { before, after }, opt
 
 
 function sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, content, options?: Options ) {
-
-    // const sendOn = targetElement.getAttribute( 'send-on' )?.trim().toLowerCase();
-    // if ( sendOn !== 'receive' ) {
-    //     return;
-    // }
-
-    // console.log( targetElement, targetElement.id );
 
     // The current target element will send to its targets
     const senderProps = collectSenderProperties( targetElement );
@@ -374,13 +374,14 @@ function receive( root, targetElement, content, options?: Options ) {
     } else if ( receiveAs === 'boolean' ) {
         content = parseBoolean( content );
     }
-
     // receiveAs with fetch-*
-    if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text' ].includes( receiveAs ) && options?.fetch ) {
+    else if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text', 'fetch-blob' ].includes( receiveAs ) && options?.fetch ) {
 
         const isJSON = receiveAs === 'fetch-json';
         const isHTML = receiveAs === 'fetch-html';
-        const prop = isHTML ? 'innerHTML' : 'innerText';
+        const isBlob = receiveAs === 'fetch-blob';
+
+        const prop = isBlob ? 'src' : ( isHTML ? 'innerHTML' : 'innerText' );
 
         const fetchOptions: RequestInit = {
             signal: AbortSignal['any']( [ signal!, AbortSignal.timeout( timeout ) ] ),
@@ -397,6 +398,9 @@ function receive( root, targetElement, content, options?: Options ) {
                 if ( ! response.ok ) {
                     throw new Error( 'Error fetching content from ' + content + '. HTTP status: ' + response.status );
                 }
+                if ( isBlob ) {
+                    return response.blob();
+                }
                 return isJSON ? response.json() : response.text();
             } )
             .then( data => {
@@ -406,10 +410,16 @@ function receive( root, targetElement, content, options?: Options ) {
                     return data;
                 }
 
-                if ( typeof options?.sanitizer === 'function' ) {
-                    targetElement[ prop ] = options.sanitizer( data );
+                if ( isBlob ) {
+                    targetElement[ prop ] = options.window!.URL.createObjectURL( data );
+                } else if ( isJSON ) {
+                    targetElement[ prop ] = JSON.stringify( data );
                 } else {
-                    targetElement[ prop ] = isJSON ? JSON.stringify( data ) : data.toString();
+                    if ( isHTML && typeof options?.sanitizer === 'function' ) {
+                        targetElement[ prop ] = options.sanitizer( data.toString() );
+                    } else {
+                        targetElement[ prop ] = data.toString();
+                    }
                 }
 
                 return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, targetElement[ prop ] , options );
@@ -422,13 +432,26 @@ function receive( root, targetElement, content, options?: Options ) {
             .catch( error => {
                 if ( onReceiveErrorFn ) {
                     onReceiveErrorFn( error, targetElement );
-                } else {
+                } else if ( prop in targetElement ) {
                     targetElement[ prop ] = error.message;
+                } else if ( targetElement.getAttribute( prop ) !== null ) {
+                    targetElement.setAttribute( prop, error.message );
+                } else {
+                    console.error( error.message );
                 }
             } );
-    }
 
-    if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
+    } else if ( [ 'src', 'blob', 'image', 'video', 'audio' ].includes( receiveAs ) ) {
+
+        targetElement[ 'src' ] = options?.window?.URL.createObjectURL( content );
+
+        if ( targetElement.tagName === 'SOURCE' ) {
+            targetElement.parentElement?.load();
+        } else if ( targetElement.tagName === 'AUDIO' || targetElement.tagName === 'VIDEO' ) {
+            targetElement.load();
+        }
+
+    } else if ( receiveAs === 'innerHTML' && typeof options?.sanitizer === 'function' ) {
         targetElement[ receiveAs ] = options.sanitizer( content.toString() );
     } else if ( booleanProps.includes( receiveAs ) ) {
         targetElement[ receiveAs ] = !!content;

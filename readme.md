@@ -124,6 +124,7 @@ export function unregister(): void;
     - `"fetch-html-js"` (html, css, javascript)
     - `"fetch-json"`
     - `"fetch-text"`
+    - `"fetch-blob"` - to fetch image, audio, video and other binary stuff.
     - `"element"`
     - `"element-clone"`
     - more options to appear ⌛
@@ -195,6 +196,7 @@ export function unregister(): void;
     - `"fetch-text"`
     - `"element"`
     - `"element-clone"`
+    - `"blob"` with `"image"`, `"audio"`, and `"video"` as aliases
     - more options to appear ⌛
 
   - `on-receive` to indicate a (synchronous) function to execute before a content is received. The function can be used to transform a content. Examples:
