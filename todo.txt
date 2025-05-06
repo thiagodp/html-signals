@@ -11,7 +11,7 @@ OK- include fetchOptions in register()'s options
 - include fetch timeout in fetchOptions
 - include option to indicate the desired id field name for forms
 
-- include option to fetch image content
+OK- include option to fetch image content
 
 - send-prop with multiple properties, in order.
     -> send-as is repeated for every property if not declared ?
@@ -43,4 +43,4 @@ not-visible --> assumes that the element starts as visible
   -> affects viewport and visibility events
 
 
-- Fix 'send' with event 'receive'
+OK- Fix 'send' with event 'receive'

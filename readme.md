@@ -25,7 +25,7 @@ Moreover, forms and other components can leverage new properties to enhance thei
 - 🧠 Short learning curve
 - 🧩 Also works with third-party components
 - ⚡ Fast, vanilla JavaScript
-- 📦 Just 9k unzipped (code), no external dependencies
+- 📦 About 13k unzipped (code), no external dependencies
 - 🛡️ Unit tested
 
 
@@ -98,16 +98,16 @@ export function unregister(): void;
 
   - `send-element` indicates an HTML element to be sent to another element. Example:
     ```html
-    <!-- When clicked, the first div will send the template content (clone) to the div with id "clock" -->
+    <!-- When clicked, the button will send the template content (clone) to the div with id "clock" -->
     <template><p>⏱️</p></template>
-    <div send-element="template" send-on="click" send-to="#clock" >Show Clock</div>
+    <button send-element="template" send-on="click" send-to="#clock" >Show Clock</button>
     <div id="clock" receive-as="element" ></div>
     ```
 
   - `send-to` indicates a query selector that contain the elements to send a content. Example:
     ```html
-    <!-- When clicked, the first div will send its 'data-hello' value to the divs with id "one" and "two" -->
-    <div data-hello="Hello!" send-prop="data-hello" send-on="click" send-to="#one,#two" >Say Hello</div>
+    <!-- When clicked, the button will send its 'data-hello' value to the divs with id "one" and "two" -->
+    <button data-hello="Hello!" send-prop="data-hello" send-on="click" send-to="#one,#two" >Say Hello</button>
     <div id="one" ></div>
     <div id="two" ></div>
     ```
@@ -142,12 +142,12 @@ export function unregister(): void;
       - a `fetch`'s `Response` object as the third argument, if a `fetch-*` format is used.
     Example:
     ```html
-    <!-- When the div is clicked, it will fetch the JSON content from the URL, and send it to the paragraph -->
-    <div
+    <!-- When the button is clicked, it will fetch the JSON content from the URL, and send it to the paragraph -->
+    <button
         data-url="https://jsonplaceholder.typicode.com/todos/1"
         send="data-url|click|#x|fetch-json"
         on-send-error="(error, target, response) => console.log(error, target, response)"
-    >Click me</a>
+    >Click me</button>
 
     <p id="x" receive-as="text" ></p>
     ```
@@ -156,9 +156,9 @@ export function unregister(): void;
     - Syntax: `send-once`, or `send-once` with a boolean false.
     - Example:
     ```html
-    <!-- When the div is clicked for the first time (only), it will send "data-x"'s content to the span -->
-    <div data-x="100" send-prop="data-x" send-on="click" send-to="span" send-once
-      >Click me</div>
+    <!-- When the button is clicked for the first time (only), it will send "data-x"'s content to the span -->
+    <button data-x="100" send-prop="data-x" send-on="click" send-to="span" send-once
+      >Click me</button>
     <span receive-as="text" ></span>
     ```
 
@@ -176,8 +176,8 @@ export function unregister(): void;
       - `once` is optional (default `false`). When defined, it must be placed after `format`.
       - Example:
       ```html
-      <!-- When clicked, the div will send the paragraph element to the span with id "bar" -->
-      <div send="{p}|click|#bar" >Click Me</div>
+      <!-- When clicked, the button will send the paragraph element to the span with id "bar" -->
+      <button send="{p}|click|#bar" >Click Me</button>
       <p>Hello</p>
       <span id="bar" receive-as="element" ></span>
       ```
@@ -194,6 +194,7 @@ export function unregister(): void;
     - `"fetch-html-js"` (html, css, javascript)
     - `"fetch-json"`
     - `"fetch-text"`
+    - `"fetch-blob"`
     - `"element"`
     - `"element-clone"`
     - `"blob"` with `"image"`, `"audio"`, and `"video"` as aliases
@@ -201,9 +202,9 @@ export function unregister(): void;
 
   - `on-receive` to indicate a (synchronous) function to execute before a content is received. The function can be used to transform a content. Examples:
     ```html
-    <!-- When clicked, the div will send its text, "Hello", to the span.
+    <!-- When clicked, the button will send its text, "Hello", to the span.
          Then the span will change the text to "Hello, World!". -->
-    <div send="text|click|span" >Hello</div>
+    <button send="text|click|span" >Hello</button>
     <span on-receive="text => `${text}, World!`" ></span>
 
     <!-- When clicked, button will send its JSON object in "data-contact" to the span elements.
@@ -221,10 +222,10 @@ export function unregister(): void;
     Example:
     ```html
     <!-- When the div is clicked, it will send the URL to the paragraph, that will fetch the JSON content from it -->
-    <div
+    <button
         data-url="https://jsonplaceholder.typicode.com/todos/1"
         send="data-url|click|#x|text"
-    >Click me</div>
+    >Click me</button>
 
     <p id="x"
         receive-as="fetch-json"

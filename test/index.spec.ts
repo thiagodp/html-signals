@@ -1357,6 +1357,36 @@ describe( 'register', () => {
         } );
 
 
+        it( 'process all the "on-receive" events in the chain', () => {
+
+            document.body.innerHTML = `
+                <div send="text|click|#x" >Foo</div>
+
+                <div id="x"
+                    receive-as="text"
+                    on-receive="s => s + '!'"
+                    send="text|receive|#y"
+                ></div>
+
+                <div id="y"
+                    receive-as="text"
+                    on-receive="s => s + '?'"
+                ></div>
+            `;
+
+            register( document.body, { document, window: window as unknown as Win } );
+
+            const source = document.querySelector( 'div' );
+            const event = new window.Event( 'click', {} );
+            source!.dispatchEvent( event );
+
+            const target1 = document.querySelector( '#x' ) as HTMLElement;
+            expect( target1.innerText ).toContain( 'Foo!' );
+
+            const target2 = document.querySelector( '#y' ) as HTMLElement;
+            expect( target2.innerText ).toContain( 'Foo!?' );
+        } );
+
     } );
 
 
