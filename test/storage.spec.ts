@@ -40,7 +40,7 @@ describe( 'storage', () => {
 
     describe( 'array', () => {
 
-        it( 'extract an unexisting array as an empty array', () => {
+        it( 'extracts an unexisting array as an empty array', () => {
             const fakeStorage = new FakeStorage();
             const options: StorageOptions = { type: 'array', key: 'items' };
             const value = getStorageItem( fakeStorage, options );
@@ -75,12 +75,21 @@ describe( 'storage', () => {
             expect( fakeStorage.getItem( options.key! ) ).toEqual( expected );
         } );
 
+        it( 'overwrites its content when the content is an array', () => {
+            const fakeStorage = new FakeStorage();
+            const options: StorageOptions = { type: 'array', key: 'items' };
+            const value = [ 1, 2, 3 ];
+            setStorageItem( fakeStorage, value, options );
+            const expected = JSON.stringify( value );
+            expect( fakeStorage.getItem( options.key! ) ).toEqual( expected );
+        } );
+
     } );
 
 
     describe( 'set', () => {
 
-        it( 'avoid duplicated items', () => {
+        it( 'avoids duplicated items', () => {
             const fakeStorage = new FakeStorage();
             const options: StorageOptions = { type: 'set', key: 'items' };
             const value = 5;
@@ -102,6 +111,13 @@ describe( 'storage', () => {
             setStorageItem( fakeStorage, value, options );
             const expected = JSON.stringify( value );
             expect( fakeStorage.getItem( options.key! ) ).toEqual( expected );
+        } );
+
+        it( 'retrieves an unexisting value as null', () => {
+            const fakeStorage = new FakeStorage();
+            const options: StorageOptions = { type: 'object', key: 'foo' };
+            const value = getStorageItem( fakeStorage, options );
+            expect( value ).toBeNull();
         } );
 
     } );
