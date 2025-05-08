@@ -1501,6 +1501,27 @@ describe( 'register', () => {
             expect( target.innerText ).toContain( '10' );
         } );
 
+
+        it( 'can use it as "send"', () => {
+
+            const expr = '${5 + 5}';
+
+            document.body.innerHTML = `
+                <button
+                    send="${expr}|click|#x"
+                >Click Me</button>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window: window as unknown as Win } );
+
+            const source = document.querySelector( 'button' ) as HTMLButtonElement;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#x' ) as HTMLElement;
+            expect( target.innerText ).toContain( '10' );
+        } );
     } );
 
 } );

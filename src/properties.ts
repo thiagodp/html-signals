@@ -2,7 +2,7 @@ import { SenderProperties } from "./types.js";
 
 export function collectSenderProperties( el: Element ): SenderProperties | null {
 
-    const checkedProperties = ( { sendProp, sendElement, sendReturn, sendOn, sendTo, sendAs, sendOnce, prevent } ) => {
+    const checkedProperties = ( { sendProp, sendElement, sendReturn, sendOn, sendTo, sendAs, sendOnce, prevent }: SenderProperties ) => {
 
         const definedSendProperties = [ sendProp, sendElement, sendReturn ].filter( v => v !== undefined ).length;
 
@@ -24,12 +24,12 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
     }
 
     const extractElement = text => {
-        const result = /^\{([^}])\}$/.exec( text ); // Example: {#foo}
+        const result = /^\{([^}]+)\}$/.exec( text ); // Example: {#foo}
         return result ? result.at( 1 ) : undefined;
     };
 
     const extractCode = text => {
-        const result = /^\$\{([^}])\}$/.exec( text ); // Example: ${1+1}
+        const result = /^\$\{([^}]+)\}$/.exec( text ); // Example: ${1+1}
         return result ? result.at( 1 ) : undefined;
     };
 
@@ -42,6 +42,8 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
         const sendOnce = once === 'true' || once === '1' ? true : false; // It should be explicit
 
         const sendReturn = sendWhat?.startsWith( '$' ) ? extractCode( sendWhat ) : undefined;
+
+        // console.log( 'sendWhat', sendWhat, 'sendReturn', sendReturn );
 
         const sendElement = sendReturn === undefined && sendWhat?.startsWith( '{' )
             ? extractElement( sendWhat ) : undefined;

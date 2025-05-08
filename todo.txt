@@ -56,3 +56,6 @@ Example:
 
 OK- send-return="JSON.parse( localStorage.items || '[]' )";
   send-as="json"
+
+OK- Verify "send" support to send-return
+  send="${5+5}|click|#x"
