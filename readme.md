@@ -87,7 +87,7 @@ export function unregister(): void;
 
 ### Primitives
 
-🚀 _Tip_: The property `send` can replace all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to`, `send-as`.
+🚀 _Tip_: The property `send` can replace all these properties at once: `send-prop`, `send-element`, `send-return`, `send-on`, `send-to`, `send-as`.
 
   - `send-prop` indicates a property to be sent to another component. Example:
     ```html
@@ -102,6 +102,17 @@ export function unregister(): void;
     <template><p>⏱️</p></template>
     <button send-element="template" send-on="click" send-to="#clock" >Show Clock</button>
     <div id="clock" receive-as="element" ></div>
+    ```
+
+  - `send-return` indicates a JavaScript code expression whose return value can be sent to another element. Example:
+    ```html
+    <!-- When clicked, the button will send the result of its send-return
+         expression (10) to the output -->
+    <button
+        send-return="5 + 5"
+        send-on="click" send-to="output"
+    >Show Value</button>
+    <output receive-as="text" ></output>
     ```
 
   - `send-to` indicates a query selector that contain the elements to send a content. Example:
@@ -162,29 +173,37 @@ export function unregister(): void;
     <span receive-as="text" ></span>
     ```
 
-  - `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-on`, `send-to`, `send-as`, `send-once`.
-    - _Syntax 1_: `send="property to send|event|target element(s)|format|once"`, where:
-      - `format` is optional (default `text`).
-      - `once` is optional (default `false`). When defined, it must be placed after `format`.
-      - Example:
+  - `send`, that can be used as a replacement to all these properties at once: `send-prop`, `send-element`, `send-return`, `send-on`, `send-to`, `send-as`, `send-once`.
+    - _Syntax_: `send="what|event|target|format|once"`, where:
+      - `what` can be:
+        - 1. A property of the element, such as `value`, `innerText` (or `text`), `innerHTML` (or `html`), etc.
+        - 2. Another DOM element, using its selector inside `{` and `}`, ex. `{#foo}`.
+        - 3. A JavaScript expression inside `${}`, example: `${5 + 5}`.
+      - `target` is a query selector to one or more DOM elements that you desire to send the content or element. Example: `#foo,#bar` will send to both `#foo` and `#bar`.
+      - `event` is a DOM event such as `click`, `change` or `DOMContentLoaded`.
+      - `format` is the format to send (default `text`).
+      - `once` register the event once. It is optional (default `false`) and, when defined, it must be placed after `format`.
+      - Examples:
       ```html
-      <!-- When changed, the input will send its value as text to the div element. -->
+      <!-- When changed, the input will send its value to the div element. -->
       <input send="value|change|div" /> <div receive-as="text" ></div>
       ```
-    - _Syntax 2_: `send="{query selector for the element to send}|event|target element(s)|format|once"`, where:
-      - `format` is optional (default `text`).
-      - `once` is optional (default `false`). When defined, it must be placed after `format`.
-      - Example:
       ```html
       <!-- When clicked, the button will send the paragraph element to the span with id "bar" -->
       <button send="{p}|click|#bar" >Click Me</button>
       <p>Hello</p>
       <span id="bar" receive-as="element" ></span>
       ```
+      ```html
+      <!-- When clicked, the button will send "10" to the span with id "bar" -->
+      <button send="${6 + 4}|click|#bar" >Click Me</button>
+      <span id="bar" receive-as="text" ></span>
+      ```
 
   - `receive-as` to indicate the receiving format:
-    - `"text"`
-    - `"html"`
+    - any DOM property of the target element, e.g. `textContent`, `value`, etc.
+    - `"text"` (as an alias to `innerText`)
+    - `"html"` (as an alias to `innerHTML`)
     - `"number"`
     - `"int"`
     - `"float"`
@@ -209,7 +228,9 @@ export function unregister(): void;
 
     <!-- When clicked, button will send its JSON object in "data-contact" to the span elements.
          Then first span will extract and show the name (from the object), while the second will extract and show the surname. -->
-    <button data-contact="{name: 'Bob', surname: 'Dylan'}" send="data-contact|click|span|json" >Click Me</button>
+    <button data-contact="{name: 'Bob', surname: 'Dylan'}"
+      send="data-contact|click|span|json"
+    >Click Me</button>
     <span on-receive="obj => obj.name"     ></span>
     <span on-receive="obj => obj.surname"  ></span>
     ```
@@ -317,7 +338,7 @@ export function unregister(): void;
 
 ### Notes
 
-- `send-prop` and `send-element` must not be used together.
+- `send-prop`, `send-element`, and `send-return` must not be used together.
 - When `"element-clone"` references a `<template>` tag, it will clone the template's content.
 - By default, `fetch` calls will include the option `{ credentials: 'include' }` for sending cookies and authentication headers to the server.
 
