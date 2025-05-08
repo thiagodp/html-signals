@@ -25,7 +25,7 @@ Moreover, forms and other components can leverage new properties to enhance thei
 - 🧠 Short learning curve
 - 🧩 Also works with third-party components
 - ⚡ Fast, vanilla JavaScript
-- 📦 About 13k unzipped (code), no external dependencies
+- 📦 Around 14k unzipped (code), no external dependencies
 - 🛡️ Unit tested
 
 
@@ -85,7 +85,7 @@ export function unregister(): void;
 
 ## Properties for HTML elements
 
-### Primitives
+### Send Primitives
 
 🚀 _Tip_: The property `send` can replace all these properties at once: `send-prop`, `send-element`, `send-return`, `send-on`, `send-to`, `send-as`.
 
@@ -199,6 +199,8 @@ export function unregister(): void;
       <button send="${6 + 4}|click|#bar" >Click Me</button>
       <span id="bar" receive-as="text" ></span>
       ```
+
+### Receive Primitives
 
   - `receive-as` to indicate the receiving format:
     - any DOM property of the target element, e.g. `textContent`, `value`, etc.
