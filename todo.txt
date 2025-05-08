@@ -45,7 +45,7 @@ not-visible --> assumes that the element starts as visible
 
 OK- Fix 'send' with event 'receive'
 
-- send-to="$storage"
+- send-to="$storage" ?
 Example:
   button
     data-obj="{title:'Foo', completed:false}"
@@ -53,3 +53,6 @@ Example:
     storage-options={json: 'array', key: 'items'}
 
   div
+
+OK- send-return="JSON.parse( localStorage.items || '[]' )";
+  send-as="json"

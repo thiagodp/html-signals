@@ -136,22 +136,33 @@ function configureSender( root, el: Element, signal, options: Options ) {
 }
 
 
-function makeEventThatMakesTargetsToReceiveTheProperty( root, { sendProp, sendElement, sendAs, sendOn, sendTo, prevent }: SenderProperties, options?: Options ) {
+function makeEventThatMakesTargetsToReceiveTheProperty( root, props: SenderProperties, options?: Options ) {
     return event => {
-        if ( prevent ) {
+        if ( props.prevent ) {
             event.preventDefault();
             event.stopPropagation();
         }
         const sender = event.target;
-        configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }, options );
+        configureTargetsToReceive( sender, root, props, options );
     };
 }
 
 
 
-function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendAs, sendOn, sendTo }: SenderProperties, options?: Options ) {
+function configureTargetsToReceive( sender, root, props: SenderProperties, options?: Options ) {
 
-    // console.log( 'sender,  sendProp, sendElement, sendAs, sendOn, sendTo ', sender,  sendProp, sendElement, sendAs, sendOn, sendTo );
+    // console.log( props );
+
+    let { sendReturn, sendProp, sendElement, sendAs, sendOn, sendTo } = props;
+
+    const { addToHistoryBeforeElements, addToHistoryAfterElements, targets } = evaluateHistory( sendTo );
+    sendTo = targets; // sendTo without $history
+
+    const onSendError = sender.getAttribute( 'on-send-error' ) || undefined;
+    const onSendErrorFn: Function | undefined = makeFunction( onSendError );
+
+    let content;
+
     if ( sendElement ) {
 
         let element = root.querySelector( sendElement );
@@ -170,45 +181,60 @@ function configureTargetsToReceive( sender, root, { sendProp, sendElement, sendA
         }
 
         return;
-    }
 
-    const { addToHistoryBeforeElements, addToHistoryAfterElements, targets } = evaluateHistory( sendTo );
-    sendTo = targets; // sendTo without $history
+    } else if ( sendReturn !== undefined ) {
 
-    // send-prop
-    sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
-    sendProp = allowedPropMap[ sendProp ] || sendProp; // Allow unmapped properties
-
-    // Get content
-    let content = sender[ sendProp! ];
-    if ( content === undefined ) {
-        // Use 'textContent' if 'innerText' is not available
-        if ( sendProp === 'innerText' || sendProp === 'text' ) {
-            content = sender[ 'textContent' ];
-        // Use "data-" attributes
-        } else if ( 'getAttribute' in sender ) {
-            content = sender.getAttribute( sendProp );
+        const func: Function|undefined = makeFunction( '() => ' + sendReturn );
+        if ( ! func ) {
+            throw new Error( `Could not parse the code defined in "${sender.tagName.toLowerCase()}": ${sendReturn}` );
         }
+        try {
+            content = func();
+        } catch ( error ) {
+            if ( onSendErrorFn ) {
+                onSendErrorFn( error, sender );
+            } else {
+                console.log( 'Error executing function: ' + error.message );
+            }
+            return;
+        }
+
+        // It will continue
+    } else {
+
+        // send-prop
+        sendProp = sendProp ? sendProp.trim().toLowerCase() : '';
+        sendProp = allowedPropMap[ sendProp ] || sendProp; // Allow unmapped properties
+
+        // Get content
+        content = sender[ sendProp! ];
+        if ( content === undefined ) {
+            // Use 'textContent' if 'innerText' is not available
+            if ( sendProp === 'innerText' || sendProp === 'text' ) {
+                content = sender[ 'textContent' ];
+            // Use "data-" attributes
+            } else if ( 'getAttribute' in sender ) {
+                content = sender.getAttribute( sendProp );
+            }
+        }
+        if ( content === undefined ) {
+            return;
+        } else if ( sendAs === 'json' ) {
+            content = parseUnquotedJSON( content );
+        } else if ( sendAs === 'number' ) {
+            content = Number( content );
+        } else if ( sendAs === 'int' ) {
+            content = parseInt( content );
+        } else if ( sendAs === 'float' ) {
+            content = parseFloat( content );
+        } else if ( sendAs === 'boolean' ) {
+            content = parseBoolean( content );
+        }
+
     }
-    if ( content === undefined ) {
-        return;
-    } else if ( sendAs === 'json' ) {
-        content = parseUnquotedJSON( content );
-    } else if ( sendAs === 'number' ) {
-        content = Number( content );
-    } else if ( sendAs === 'int' ) {
-        content = parseInt( content );
-    } else if ( sendAs === 'float' ) {
-        content = parseFloat( content );
-    } else if ( sendAs === 'boolean' ) {
-        content = parseBoolean( content );
-    }
 
 
-    const onSendError = sender.getAttribute( 'on-send-error' ) || undefined;
-    const onSendErrorFn: Function | undefined = makeFunction( onSendError );
-
-    // fetch-*
+    // send-as=fetch-*
     if ( [ 'fetch-html', 'fetch-html-js', 'fetch-json', 'fetch-text', 'fetch-blob' ].includes( sendAs! )
         && options?.fetch ) {
 
@@ -324,8 +350,10 @@ function sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, conten
 
 function receive( root, targetElement, content, options?: Options ) {
 
-    let receiveAs = targetElement.getAttribute( 'receive-as' )?.trim().toLowerCase() || 'text';
-    receiveAs = allowedPropMap[ receiveAs ] || receiveAs; // Allow unmapped properties
+    // console.log( targetElement.tagName, ' will receive', content );
+
+    let receiveAs = targetElement.getAttribute( 'receive-as' )?.trim() || 'text';
+    receiveAs = allowedPropMap[ receiveAs.toLowerCase() ] || receiveAs; // Allow unmapped properties
 
     const onReceiveError = targetElement.getAttribute( 'on-receive-error' ) || undefined;
     const onReceiveErrorFn: Function | undefined = makeFunction( onReceiveError );
@@ -456,7 +484,7 @@ function receive( root, targetElement, content, options?: Options ) {
     } else if ( booleanProps.includes( receiveAs ) ) {
         targetElement[ receiveAs ] = !!content;
     } else {
-        targetElement[ receiveAs ] = content.toString();
+        targetElement[ receiveAs ] = content?.toString();
     }
 
     return sendContentToTargetsIfSendOnIsSetToReceive( root, targetElement, targetElement[ receiveAs ], options );

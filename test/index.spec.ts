@@ -1476,4 +1476,31 @@ describe( 'register', () => {
 
     } );
 
+
+    describe( 'send-return', () => {
+
+        it( 'can send a computation', () => {
+
+            document.body.innerHTML = `
+                <button
+                    send-return="5 + 5"
+                    send-on="click"
+                    send-to="#x"
+                    send-once
+                >Click Me</button>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window: window as unknown as Win } );
+
+            const source = document.querySelector( 'button' ) as HTMLButtonElement;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#x' ) as HTMLElement;
+            expect( target.innerText ).toContain( '10' );
+        } );
+
+    } );
+
 } );

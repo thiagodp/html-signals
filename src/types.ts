@@ -16,8 +16,10 @@ export type Options = {
 
 
 export type SenderProperties = {
+    send?: string,
     sendProp?: string,
     sendElement?: string,
+    sendReturn?: string,
     sendAs?: string,
     sendOn?: string,
     sendTo?: string,
