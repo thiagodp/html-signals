@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send-Return</title>
+</head>
+<body>
+    <button
+        send-return="5 + 5"
+        send-on="click" send-to="#o1"
+    >Show Value</button>
+    <output id="o1" receive-as="text" ></output>
+
+    <button
+        send-return="new Date().toLocaleString()"
+        send-on="click" send-to="#o2"
+    >Show Value</button>
+    <output id="o2" receive-as="text" ></output>
+
+    <button send="${5 + 5}|click|#o3" >Show Value</button>
+    <output id="o3" ></output>
+
+    <button send="${new Date().toLocaleString()}|click|#o4" >Show Value</button>
+    <output id="o4" ></output>
+
+    <script type="module" >
+        import { register } from '../dist/index.esm.js';
+        register( document.body );
+    </script>
+</body>
+</html>

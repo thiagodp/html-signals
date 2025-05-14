@@ -1,5 +1,7 @@
 TO-DO:
 
+- proper history handling for routes, when sending URLs to $history
+
 - new data types to use in send-as and receive-as:
   OK- boolean
   - date      -> "year-month-day"
