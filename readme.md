@@ -426,9 +426,14 @@ Specifies headers to include in an HTTP request, using JSON format with unquoted
 ### Limitations
 
 - JSON content in element properties must have unquoted or single-quoted properties (HTML limitation)
-  - ex.: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
-  - ex.: `<span data-todo="{ 'title': 'Buy coffee', 'completed': false }" ></span>`
+  - example: `<span data-todo="{ title: 'Buy coffee', completed: false }" ></span>`
+  - example: `<span data-todo="{ 'title': 'Buy coffee', 'completed': false }" ></span>`
 - `$history` must be at the beginning or at the end of "send-to"
+- `send` cannot declare an object. Please consider declaring the object in a `data-` property.
+  - that does not work:
+    `<button send="${{name:'Bob'}}|click|div" >Send</button> <div></div>`
+  - use this instead:
+    `<button data-obj="{name:'Bob'}" send="data-obj|click|div" >Send</button> <div></div>`
 
 
 ## License

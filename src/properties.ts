@@ -29,19 +29,29 @@ export function collectSenderProperties( el: Element ): SenderProperties | null 
     };
 
     const extractCode = text => {
-        const result = /^\$\{([^}]+)\}$/.exec( text ); // Example: ${1+1}
-        return result ? result.at( 1 ) : undefined;
+        const result = /^(\$\{([^}]+)\})/.exec( text ); // Example: "${1+1}" -> "1+1"
+        return result ? { input: result.at( 1 )!, code: result.at( 2 )! } : undefined;
     };
-
 
     const prevent = el.getAttribute( 'prevent' ) !== null ? true : undefined;
 
-    const send = el.getAttribute( 'send' ) || undefined;
+    let send = el.getAttribute( 'send' ) || undefined;
     if ( send ) {
+        const hasCode = send.trim().startsWith( '${' );
+        let sendReturn;
+        if ( hasCode ) {
+            const extraction = extractCode( send );
+            if ( extraction ) {
+                const { input, code } = extraction;
+                sendReturn = code;
+                send = send.replace( input, '' );
+            } else {
+                console.error( 'Invalid send syntax in ', el );
+            }
+        }
+
         const [ sendWhat, sendOn, sendTo, sendAs, once ] = send.split( '|' ).map( value => value.trim() || undefined );
         const sendOnce = once === 'true' || once === '1' ? true : false; // It should be explicit
-
-        const sendReturn = sendWhat?.startsWith( '$' ) ? extractCode( sendWhat ) : undefined;
 
         // console.log( 'sendWhat', sendWhat, 'sendReturn', sendReturn );
 

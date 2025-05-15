@@ -1501,8 +1501,11 @@ describe( 'register', () => {
             expect( target.innerText ).toContain( '10' );
         } );
 
+    } );
 
-        it( 'can use it as "send"', () => {
+    describe( 'send', () => {
+
+        it( 'can send a computation"', () => {
 
             const expr = '${5 + 5}';
 
@@ -1522,6 +1525,29 @@ describe( 'register', () => {
             const target = document.querySelector( '#x' ) as HTMLElement;
             expect( target.innerText ).toContain( '10' );
         } );
+
+
+        it( 'works even when pipe is used', () => {
+
+            const expr = '${false || 10}';
+
+            document.body.innerHTML = `
+                <button
+                    send="${expr}|click|#x"
+                >Click Me</button>
+
+                <div id="x" receive-as="text" ></div>
+            `;
+
+            register( document.body, { window: window as unknown as Win } );
+
+            const source = document.querySelector( 'button' ) as HTMLButtonElement;
+            source.dispatchEvent( new window.Event( 'click', {} ) );
+
+            const target = document.querySelector( '#x' ) as HTMLElement;
+            expect( target.innerText ).toContain( '10' );
+        } );
+
     } );
 
 } );
